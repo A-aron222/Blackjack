@@ -225,9 +225,16 @@ function dealerTurn() {
    RESULT
 ======================= */
 function determineWinner() {
+
     const playerScore = calculateScore(playerHand);
     const dealerScore = calculateScore(dealerHand);
 
+    if (playerHand.length === 2 && playerScore === 21) {
+        bank += currentBet * 2.5;
+        endRound("Blackjack! You win!");
+        return;
+    }
+    
     if (dealerScore > 21 || playerScore > dealerScore) {
         bank += currentBet * 2;
         endRound("You win!");
