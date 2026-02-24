@@ -124,8 +124,8 @@ chips.forEach(chip => {
         if (gameActive) return;
         const value = parseFloat(chip.dataset.value);
         if (bank >= value) {
-            bank -= value;
-            currentBet += value;
+            bank = Math.round((bank - value) * 100) / 100;
+            currentBet = Math.round((currentBet + value) * 100) / 100;
             updateMoney();
         }
     });
@@ -133,7 +133,7 @@ chips.forEach(chip => {
 
 clearBetBtn.onclick = () => {
     if (gameActive) return;
-    bank += currentBet;
+    bank += Math.round((bank + currentBet) * 100) / 100;
     currentBet = 0;
     updateMoney();
 };
