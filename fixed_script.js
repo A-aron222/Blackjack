@@ -132,6 +132,7 @@ chips.forEach(chip => {
             bank = Math.round((bank - value) * 100) / 100;
             currentBet = Math.round((currentBet + value) * 100) / 100;
             updateMoney();
+            dealBtn.disabled = false;
         }
     });
 });
@@ -140,6 +141,7 @@ clearBetBtn.onclick = () => {
     if (gameActive) return;
     bank += Math.round((bank + currentBet) * 100) / 100;
     currentBet = 0;
+    dealBtn.disabled = true;
     updateMoney();
 };
 
@@ -147,6 +149,7 @@ rebetBtn.onclick = () => {
     if (gameActive || lastBet > bank) return;
     bank -= lastBet;
     currentBet = lastBet;
+    dealBtn.disabled = false;
     updateMoney();
 };
 
@@ -154,6 +157,7 @@ doubleRebetBtn.onclick = () => {
     if (gameActive || lastBet * 2 > bank) return;
     bank -= lastBet * 2;
     currentBet = lastBet * 2;
+    dealBtn.disabled = false;
     updateMoney();
 };
 
@@ -161,6 +165,7 @@ tripleRebetBtn.onclick = () => {
     if (gameActive || lastBet * 3 > bank) return;
     bank -= lastBet * 3;
     currentBet = lastBet * 3;
+    dealBtn.disabled = false;
     updateMoney();
 };
 
