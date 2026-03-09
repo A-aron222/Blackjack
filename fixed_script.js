@@ -24,6 +24,11 @@ const tripleRebetBtn = document.getElementById("Button-triple-rebet");
 
 const chips = document.querySelectorAll(".chip");
 
+const helpModal = document.getElementById("help-modal");
+document.getElementById("menu-help").onclick = () => helpModal.style.display = "flex";
+document.getElementById("close-help").onclick = () => helpModal.style.display = "none";
+document.getElementById("help-close-Button").onclick = () => helpModal.style.display = "none";
+
 /* =======================
    GAME STATE
 ======================= */
