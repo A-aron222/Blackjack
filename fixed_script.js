@@ -256,8 +256,13 @@ function endRound(message) {
     currentBet = 0;
     gameActive = false;
 
+    renderCards(dealerCardsEl, dealerHand);
+    updateScores(true);
+
     hitBtn.disabled = true;
     standBtn.disabled = true;
+    doubleBtn.disabled = true;
+    splitBtn.disabled = true;
     dealBtn.disabled = false;
 
     updateMoney();
