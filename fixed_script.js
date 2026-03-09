@@ -96,12 +96,17 @@ function calculateScore(hand) {
 /* =======================
    RENDERING
 ======================= */
-function renderCards(container, hand) {
+function renderCards(container, hand, hideLastN = 0) {
     container.innerHTML = "";
-    hand.forEach(card => {
+    hand.forEach((card, index) => {
         const div = document.createElement("div");
-        div.className = "card";
-        div.textContent = `${card.value}${card.suit}`;
+        const isHidden = index >= hand.length - hideLastN;
+        if (isHidden) {
+            div.className = "card card-back";
+        } else {
+            div.className = "card";
+            div.textContent = `${card.value}${card.suit}`;
+        }
         container.appendChild(div);
     });
 }
@@ -176,7 +181,7 @@ dealBtn.onclick = () => {
     playerHand = [drawCard(), drawCard()];
 
     renderCards(playerCardsEl, playerHand);
-    renderCards(dealerCardsEl, [dealerHand[0]]);
+    renderCards(dealerCardsEl, dealerHand, 1);
 
     updateScores(false);
 
