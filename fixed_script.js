@@ -261,6 +261,10 @@ function determineWinner() {
     }
 }
 
+function updateDealAvailability() {
+    dealBtn.disabled = gameActive || currentBet <= 0;
+}
+
 function endRound(message) {
     resultEl.textContent = message;
     currentBet = 0;
@@ -278,9 +282,19 @@ function endRound(message) {
     updateMoney();
 }
 
-/* =======================
-   INIT
-======================= */
 hitBtn.disabled = true;
 standBtn.disabled = true;
 updateMoney();
+
+function dealCards() {
+    deck = createDeck();
+    shuffle(deck);
+
+    playerHand = [drawCard(), drawCard()];
+    dealerHand = [drawCard(), drawCard()];
+
+    renderCards(playerCardsEl, playerHand);
+    renderCards(dealerCardsEl, [dealerHand[0]]); 
+
+    updateScores(false);
+}
