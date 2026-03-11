@@ -246,6 +246,10 @@ function determineWinner() {
     }
 }
 
+function updateDealAvailability() {
+    dealBtn.disabled = gameActive || currentBet <= 0;
+}
+
 function endRound(message) {
     resultEl.textContent = message;
     currentBet = 0;
