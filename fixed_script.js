@@ -29,6 +29,13 @@ document.getElementById("menu-help").onclick = () => helpModal.style.display = "
 document.getElementById("close-help").onclick = () => helpModal.style.display = "none";
 document.getElementById("help-close-Button").onclick = () => helpModal.style.display = "none";
 
+const modalCloseBtn = document.getElementById("modal-close");
+if (modalCloseBtn) {
+    modalCloseBtn.onclick = () => {
+        document.getElementById("game-modal").style.display = "none";
+    };
+}
+
 /* =======================
    GAME STATE
 ======================= */
