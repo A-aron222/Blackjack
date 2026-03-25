@@ -117,7 +117,7 @@ function renderCards(container, hand, hideLastN = 0) {
             div.className = "card card-back";
         } else {
             div.className = "card";
-            div.textContent = `${card.value}${card.suit}`;
+            div.innerHTML = `<span class="card-value ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.value}</span><span class="card-suit ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.suit}</span><span class="card-value-bottom ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.value}</span>`;
         }
         container.appendChild(div);
     });
