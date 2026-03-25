@@ -117,7 +117,7 @@ function renderCards(container, hand, hideLastN = 0) {
             div.className = "card card-back";
         } else {
             div.className = "card";
-            div.textContent = `${card.value}${card.suit}`;
+            div.innerHTML = `<span class="card-value ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.value}</span><span class="card-suit ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.suit}</span><span class="card-value-bottom ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.value}</span>`;
         }
         container.appendChild(div);
     });
@@ -158,7 +158,13 @@ clearBetBtn.onclick = () => {
 };
 
 rebetBtn.onclick = () => {
-    if (gameActive || lastBet > bank) return;
+    if (gameActive || lastBet <= 0) return;
+
+    bank += currentBet;
+    currentBet = 0;
+
+    if (lastBet > bank) return;
+
     bank -= lastBet;
     currentBet = lastBet;
     dealBtn.disabled = false;
@@ -166,7 +172,13 @@ rebetBtn.onclick = () => {
 };
 
 doubleRebetBtn.onclick = () => {
-    if (gameActive || lastBet * 2 > bank) return;
+    if (gameActive || lastBet <= 0) return;
+
+    bank += currentBet;
+    currentBet = 0;
+
+    if (lastBet * 2 > bank) return;
+
     bank -= lastBet * 2;
     currentBet = lastBet * 2;
     dealBtn.disabled = false;
@@ -174,7 +186,13 @@ doubleRebetBtn.onclick = () => {
 };
 
 tripleRebetBtn.onclick = () => {
-    if (gameActive || lastBet * 3 > bank) return;
+    if (gameActive || lastBet <= 0) return;
+
+    bank += currentBet;
+    currentBet = 0;
+
+    if (lastBet * 3 > bank) return;
+
     bank -= lastBet * 3;
     currentBet = lastBet * 3;
     dealBtn.disabled = false;
