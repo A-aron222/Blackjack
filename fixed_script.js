@@ -158,7 +158,13 @@ clearBetBtn.onclick = () => {
 };
 
 rebetBtn.onclick = () => {
-    if (gameActive || lastBet > bank) return;
+    if (gameActive || lastBet <= 0) return;
+
+    bank += currentBet;
+    currentBet = 0;
+
+    if (lastBet > bank) return;
+
     bank -= lastBet;
     currentBet = lastBet;
     dealBtn.disabled = false;
@@ -166,7 +172,13 @@ rebetBtn.onclick = () => {
 };
 
 doubleRebetBtn.onclick = () => {
-    if (gameActive || lastBet * 2 > bank) return;
+    if (gameActive || lastBet <= 0) return;
+
+    bank += currentBet;
+    currentBet = 0;
+
+    if (lastBet * 2 > bank) return;
+
     bank -= lastBet * 2;
     currentBet = lastBet * 2;
     dealBtn.disabled = false;
@@ -174,7 +186,13 @@ doubleRebetBtn.onclick = () => {
 };
 
 tripleRebetBtn.onclick = () => {
-    if (gameActive || lastBet * 3 > bank) return;
+    if (gameActive || lastBet <= 0) return;
+
+    bank += currentBet;
+    currentBet = 0;
+
+    if (lastBet * 3 > bank) return;
+
     bank -= lastBet * 3;
     currentBet = lastBet * 3;
     dealBtn.disabled = false;
