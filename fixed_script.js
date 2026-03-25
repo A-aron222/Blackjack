@@ -230,8 +230,19 @@ standBtn.onclick = () => {
 /* =======================
    DEALER LOGIC
 ======================= */
+function animateReveal(container) {
+    const lastCard = container.lastElementChild;
+    if (!lastCard) return;
+
+    lastCard.classList.add("revealing");
+    lastCard.addEventListener("animationend", () => {
+        lastCard.classList.remove("revealing");
+    }, { once: true });
+}
+
 function dealerTurn() {
     renderCards(dealerCardsEl, dealerHand);
+    animateReveal(dealerCardsEl);
     updateScores(true);
 
     while (calculateScore(dealerHand) < 17) {
