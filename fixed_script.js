@@ -23,6 +23,7 @@ const doubleRebetBtn = document.getElementById("Button-double-rebet");
 const tripleRebetBtn = document.getElementById("Button-triple-rebet");
 
 const chips = document.querySelectorAll(".chip");
+const safeBankAmountEl = document.getElementById("safe-bank-amount");
 
 const helpModal = document.getElementById("help-modal");
 document.getElementById("menu-help").onclick = () => helpModal.style.display = "flex";
@@ -44,6 +45,7 @@ let dealerHand = [];
 let playerHand = [];
 
 let bank = 1000;
+let safeBank = 0;
 let currentBet = 0;
 let lastBet = 0;
 let gameActive = false;
@@ -131,6 +133,7 @@ function updateScores(showDealer = false) {
 function updateMoney() {
     bankEl.textContent = `$${bank.toFixed(2)}`;
     betEl.textContent = `$${currentBet.toFixed(2)}`;
+    safeBankAmountEl.textContent = `$${safeBank.toFixed(2)}`;
 }
 
 /* =======================
@@ -321,6 +324,41 @@ function endRound(message) {
 hitBtn.disabled = true;
 standBtn.disabled = true;
 updateMoney();
+
+/* =======================
+   SAFE BANK
+======================= */
+const safeBankModal = document.getElementById("safe-bank-modal");
+const safeBankInput = document.getElementById("safe-bank-input");
+const safeBankInfo = document.getElementById("safe-bank-modal-info");
+
+document.getElementById("manage-safe-bank").onclick = () => {
+    safeBankInfo.textContent = `Bank: $${bank.toFixed(2)} | Safe Bank: $${safeBank.toFixed(2)}`;
+    safeBankInput.value = "";
+    safeBankModal.style.display = "flex";
+};
+
+document.getElementById("safe-bank-deposit").onclick = () => {
+    const amount = Math.round(parseFloat(safeBankInput.value) * 100) / 100;
+    if (isNaN(amount) || amount <= 0 || amount > bank) return;
+    bank = Math.round((bank - amount) * 100) / 100;
+    safeBank = Math.round((safeBank + amount) * 100) / 100;
+    updateMoney();
+    safeBankModal.style.display = "none";
+};
+
+document.getElementById("safe-bank-withdraw").onclick = () => {
+    const amount = Math.round(parseFloat(safeBankInput.value) * 100) / 100;
+    if (isNaN(amount) || amount <= 0 || amount > safeBank) return;
+    safeBank = Math.round((safeBank - amount) * 100) / 100;
+    bank = Math.round((bank + amount) * 100) / 100;
+    updateMoney();
+    safeBankModal.style.display = "none";
+};
+
+document.getElementById("safe-bank-cancel").onclick = () => {
+    safeBankModal.style.display = "none";
+};
 
 function dealCards() {
     deck = createDeck();
