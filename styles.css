@@ -458,6 +458,12 @@ body {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
 }
 
+.chip.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .chip.chip-flash {
     animation: chip-flash 0.5s;
 }

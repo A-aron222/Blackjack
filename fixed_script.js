@@ -134,6 +134,9 @@ function updateMoney() {
     bankEl.textContent = `$${bank.toFixed(2)}`;
     betEl.textContent = `$${currentBet.toFixed(2)}`;
     safeBankAmountEl.textContent = `$${safeBank.toFixed(2)}`;
+    chips.forEach(chip => {
+        chip.classList.toggle("disabled", gameActive);
+    });
 }
 
 /* =======================
@@ -154,7 +157,7 @@ chips.forEach(chip => {
 
 clearBetBtn.onclick = () => {
     if (gameActive) return;
-    bank += Math.round((bank + currentBet) * 100) / 100;
+    bank = Math.round((bank + currentBet) * 100) / 100;
     currentBet = 0;
     dealBtn.disabled = true;
     updateMoney();
@@ -226,6 +229,7 @@ dealBtn.onclick = () => {
     hitBtn.disabled = false;
     standBtn.disabled = false;
     dealBtn.disabled = true;
+    updateMoney();
 };
 
 /* =======================
