@@ -221,6 +221,13 @@ dealBtn.onclick = () => {
     dealerHand = [drawCard(), drawCard()];
     playerHand = [drawCard(), drawCard()];
 
+    playerSplitHand = [];
+    isSplitActive = false;
+    currentHandIndex = 0;
+    playerSplitArea.style.display = "none";
+    playerSplitCardsEl.innerHTML = "";
+    playerSplitScoreEl.textContent = "0";
+
     renderCards(playerCardsEl, playerHand);
     renderCards(dealerCardsEl, dealerHand, 1);
 
@@ -228,10 +235,12 @@ dealBtn.onclick = () => {
 
     hitBtn.disabled = false;
     standBtn.disabled = false;
+    doubleBtn.disabled = bank < currentBet;
+    splitBtn.disabled = !(playerHand.length === 2 && playerHand[0].value === playerHand[1].value && bank >= currentBet);
     dealBtn.disabled = true;
+
     updateMoney();
 };
-
 /* =======================
    PLAYER ACTIONS
 ======================= */
