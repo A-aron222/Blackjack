@@ -407,24 +407,81 @@ function dealerTurn() {
    RESULT
 ======================= */
 function determineWinner() {
-
-    const playerScore = calculateScore(playerHand);
     const dealerScore = calculateScore(dealerHand);
 
-    if (playerHand.length === 2 && playerScore === 21) {
-        bank += currentBet * 2.5;
-        endRound("Blackjack! You win!");
+    if (!isSplitActive) {
+        const playerScore = calculateScore(playerHand);
+
+        if (playerHand.length === 2 && playerScore === 21) {
+            bank += currentBet * 2.5;
+            endRound("Blackjack! You win!");
+            return;
+        }
+
+        if (dealerScore > 21 || playerScore > dealerScore) {
+            bank += currentBet * 2;
+            endRound("You win!");
+        } else if (playerScore < dealerScore) {
+            endRound("Dealer wins.");
+        } else {
+            bank += currentBet;
+            endRound("Push.");
+        }
+
         return;
     }
-    
-    if (dealerScore > 21 || playerScore > dealerScore) {
+
+    const hand1Score = calculateScore(playerHand);
+    const hand2Score = calculateScore(playerSplitHand);
+
+   let hand1Result = "";
+    let hand2Result = "";
+
+    if (hand1Score > 21) {
+        hand1Result = "lose";
+    } else if (dealerScore > 21 || hand1Score > dealerScore) {
+        hand1Result = "win";
         bank += currentBet * 2;
-        endRound("You win!");
-    } else if (playerScore < dealerScore) {
-        endRound("Dealer wins.");
+    } else if (hand1Score < dealerScore) {
+        hand1Result = "lose";
     } else {
+        hand1Result = "push";
         bank += currentBet;
-        endRound("Push.");
+    }
+
+    if (hand2Score > 21) {
+        hand2Result = "lose";
+    } else if (dealerScore > 21 || hand2Score > dealerScore) {
+        hand2Result = "win";
+        bank += currentBet * 2;
+    } else if (hand2Score < dealerScore) {
+        hand2Result = "lose";
+    } else {
+        hand2Result = "push";
+        bank += currentBet;
+    }
+
+    if (hand1Result === "win" && hand2Result === "win") {
+        endRound("You won both hands!");
+    } else if (hand1Result === "lose" && hand2Result === "lose") {
+        endRound("You lost both hands.");
+    } else if (
+        (hand1Result === "win" && hand2Result === "lose") ||
+        (hand1Result === "lose" && hand2Result === "win")
+    ) {
+        endRound("You won one hand and lost the other hand.");
+    } else if (hand1Result === "push" && hand2Result === "push") {
+        endRound("Both hands pushed.");
+    } else if (
+        (hand1Result === "win" && hand2Result === "push") ||
+        (hand1Result === "push" && hand2Result === "win")
+    ) {
+        endRound("You won one hand and pushed the other.");
+    } else if (
+        (hand1Result === "lose" && hand2Result === "push") ||
+        (hand1Result === "push" && hand2Result === "lose")
+    ) {
+        endRound("You lost one hand and pushed the other.");
     }
 }
 
