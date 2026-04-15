@@ -232,7 +232,24 @@ dealBtn.onclick = () => {
     renderCards(playerCardsEl, playerHand);
     renderCards(dealerCardsEl, dealerHand, 1);
 
-    updateScores(false);
+        updateScores(false);
+
+    const playerScore = calculateScore(playerHand);
+    const dealerScore = calculateScore(dealerHand);
+
+    if (playerHand.length === 2 && playerScore === 21) {
+        renderCards(dealerCardsEl, dealerHand);
+        updateScores(true);
+
+        if (dealerScore === 21) {
+            bank += currentBet;
+            endRound("Push. Both have Blackjack.");
+        } else {
+            bank += currentBet * 2.5;
+            endRound("Blackjack! You win!");
+        }
+        return;
+    }
 
     hitBtn.disabled = false;
     standBtn.disabled = false;
@@ -241,7 +258,6 @@ dealBtn.onclick = () => {
     dealBtn.disabled = true;
 
     updateMoney();
-};
 /* =======================
    PLAYER ACTIONS
 ======================= */
