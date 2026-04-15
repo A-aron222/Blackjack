@@ -227,6 +227,7 @@ dealBtn.onclick = () => {
     playerSplitArea.style.display = "none";
     playerSplitCardsEl.innerHTML = "";
     playerSplitScoreEl.textContent = "0";
+    updateActiveHandUI();
 
     renderCards(playerCardsEl, playerHand);
     renderCards(dealerCardsEl, dealerHand, 1);
@@ -247,18 +248,33 @@ dealBtn.onclick = () => {
 hitBtn.onclick = () => {
     if (!gameActive) return;
 
-    playerHand.push(drawCard());
-    renderCards(playerCardsEl, playerHand);
-    updateScores(false);
+    const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
+    const activeCardsEl = currentHandIndex === 0 ? playerCardsEl : playerSplitCardsEl;
+    const activeScoreEl = currentHandIndex === 0 ? playerScoreEl : playerSplitScoreEl;
 
-    if (calculateScore(playerHand) > 21) {
-        endRound("Player busts. Dealer wins.");
+    activeHand.push(drawCard());
+    renderCards(activeCardsEl, activeHand);
+    activeScoreEl.textContent = calculateScore(activeHand);
+
+    if (calculateScore(activeHand) > 21) {
+        if (isSplitActive && currentHandIndex === 0) {
+            currentHandIndex = 1;
+            updateActiveHandUI();
+        } else {
+            dealerTurn();
+        }
     }
 };
 
 standBtn.onclick = () => {
     if (!gameActive) return;
-    dealerTurn();
+
+    if (isSplitActive && currentHandIndex === 0) {
+        currentHandIndex = 1;
+        updateActiveHandUI();
+    } else {
+        dealerTurn();
+    }
 };
 
 /* =======================
@@ -271,6 +287,25 @@ let currentHandIndex = 0;
 const playerSplitCardsEl = document.getElementById("player-split-cards");
 const playerSplitScoreEl = document.getElementById("player-split-score");
 const playerSplitArea = document.getElementById("player-split-area");
+
+function updateActiveHandUI() {
+    const playerArea = document.querySelector(".player-area");
+
+    playerArea.classList.toggle("active-hand", currentHandIndex === 0);
+    playerSplitArea.classList.toggle("active-hand", currentHandIndex === 1);
+}
+
+playerCardsEl.onclick = () => {
+    if (!gameActive || !isSplitActive) return;
+    currentHandIndex = 0;
+    updateActiveHandUI();
+};
+
+playerSplitCardsEl.onclick = () => {
+    if (!gameActive || !isSplitActive) return;
+    currentHandIndex = 1;
+    updateActiveHandUI();
+};
 
 splitBtn.onclick = () => {
     if (!gameActive) return;
@@ -299,7 +334,8 @@ splitBtn.onclick = () => {
 
     updateScores(false);
     playerSplitScoreEl.textContent = calculateScore(playerSplitHand);
-
+    updateActiveHandUI();
+   
     updateMoney();
 };
 
