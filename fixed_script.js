@@ -253,6 +253,48 @@ standBtn.onclick = () => {
 };
 
 /* =======================
+   SPLIT LOGIC
+======================= */
+let playerSplitHand = [];
+let isSplitActive = false;
+let currentHandIndex = 0;
+
+const playerSplitCardsEl = document.getElementById("player-split-cards");
+const playerSplitScoreEl = document.getElementById("player-split-score");
+const playerSplitArea = document.getElementById("player-split-area");
+
+splitBtn.onclick = () => {
+    if (!gameActive) return;
+
+    // Only allow split if 2 cards of same value
+    if (playerHand.length !== 2 || playerHand[0].value !== playerHand[1].value) return;
+
+    if (bank < currentBet) return; // need equal bet
+
+    // Deduct second bet
+    bank -= currentBet;
+
+    // Split hands
+    playerSplitHand = [playerHand.pop()];
+    playerHand.push(drawCard());
+    playerSplitHand.push(drawCard());
+
+    isSplitActive = true;
+    currentHandIndex = 0;
+
+    // Show split area
+    playerSplitArea.style.display = "block";
+
+    renderCards(playerCardsEl, playerHand);
+    renderCards(playerSplitCardsEl, playerSplitHand);
+
+    updateScores(false);
+    playerSplitScoreEl.textContent = calculateScore(playerSplitHand);
+
+    updateMoney();
+};
+
+/* =======================
    DEALER LOGIC
 ======================= */
 function animateReveal(container) {
