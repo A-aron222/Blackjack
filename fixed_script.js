@@ -254,6 +254,10 @@ hitBtn.onclick = () => {
 
     activeHand.push(drawCard());
     renderCards(activeCardsEl, activeHand);
+
+    doubleBtn.disabled = true;
+    splitBtn.disabled = true;
+
     activeScoreEl.textContent = calculateScore(activeHand);
 
     if (calculateScore(activeHand) > 21) {
@@ -269,6 +273,34 @@ hitBtn.onclick = () => {
 standBtn.onclick = () => {
     if (!gameActive) return;
 
+    if (isSplitActive && currentHandIndex === 0) {
+        currentHandIndex = 1;
+        updateActiveHandUI();
+    } else {
+        dealerTurn();
+    }
+};
+
+doubleBtn.onclick = () => {
+    if (!gameActive) return;
+
+    // Deduct additional bet equal to current bet
+    if (bank < currentBet) return;
+    bank -= currentBet;
+    currentBet *= 2;
+
+    // Draw exactly one card
+    const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
+    const activeCardsEl = currentHandIndex === 0 ? playerCardsEl : playerSplitCardsEl;
+    const activeScoreEl = currentHandIndex === 0 ? playerScoreEl : playerSplitScoreEl;
+
+    activeHand.push(drawCard());
+    renderCards(activeCardsEl, activeHand);
+    activeScoreEl.textContent = calculateScore(activeHand);
+
+    updateMoney();
+
+    // Automatically stand (move to next hand or dealer turn)
     if (isSplitActive && currentHandIndex === 0) {
         currentHandIndex = 1;
         updateActiveHandUI();
