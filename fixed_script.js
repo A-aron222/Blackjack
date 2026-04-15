@@ -237,7 +237,7 @@ dealBtn.onclick = () => {
     hitBtn.disabled = false;
     standBtn.disabled = false;
     doubleBtn.disabled = bank < currentBet;
-    splitBtn.disabled = !(playerHand.length === 2 && playerHand[0].value === playerHand[1].value && bank >= currentBet);
+    splitBtn.disabled = !(playerHand.length === 2 && getCardSplitValue(playerHand[0]) === getCardSplitValue(playerHand[1]) && bank >= currentBet);
     dealBtn.disabled = true;
 
     updateMoney();
@@ -307,11 +307,16 @@ playerSplitCardsEl.onclick = () => {
     updateActiveHandUI();
 };
 
+function getCardSplitValue(card) {
+    if (["10", "J", "Q", "K"].includes(card.value)) return 10;
+    return card.value;
+}
+
 splitBtn.onclick = () => {
     if (!gameActive) return;
 
     // Only allow split if 2 cards of same value
-    if (playerHand.length !== 2 || playerHand[0].value !== playerHand[1].value) return;
+    if (playerHand.length !== 2 || getCardSplitValue(playerHand[0]) !== getCardSplitValue(playerHand[1])) return;
 
     if (bank < currentBet) return; // need equal bet
 
