@@ -228,6 +228,7 @@ dealBtn.onclick = () => {
 
     hitBtn.disabled = false;
     standBtn.disabled = false;
+    doubleBtn.disabled = bank < currentBet;
     dealBtn.disabled = true;
     updateMoney();
 };
@@ -250,6 +251,21 @@ hitBtn.onclick = () => {
 standBtn.onclick = () => {
     if (!gameActive) return;
     dealerTurn();
+};
+
+doubleBtn.onclick = () => {
+    if (!gameActive || playerHand.length !== 2 || bank < currentBet) return;
+    bank = Math.round((bank - currentBet) * 100) / 100;
+    currentBet = Math.round((currentBet * 2) * 100) / 100;
+    playerHand.push(drawCard());
+    renderCards(playerCardsEl, playerHand);
+    updateScores(false);
+    updateMoney();
+    if (calculateScore(playerHand) > 21) {
+        endRound("Player busts. Dealer wins.");
+    } else {
+        dealerTurn();
+    }
 };
 
 /* =======================
