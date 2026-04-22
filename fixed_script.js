@@ -221,36 +221,175 @@ dealBtn.onclick = () => {
     dealerHand = [drawCard(), drawCard()];
     playerHand = [drawCard(), drawCard()];
 
+    playerSplitHand = [];
+    isSplitActive = false;
+    currentHandIndex = 0;
+    playerSplitArea.style.display = "none";
+    playerSplitCardsEl.innerHTML = "";
+    playerSplitScoreEl.textContent = "0";
+    updateActiveHandUI();
+
     renderCards(playerCardsEl, playerHand);
     renderCards(dealerCardsEl, dealerHand, 1);
 
-    updateScores(false);
+        updateScores(false);
+
+    const playerScore = calculateScore(playerHand);
+    const dealerScore = calculateScore(dealerHand);
+
+    if (playerHand.length === 2 && playerScore === 21) {
+        renderCards(dealerCardsEl, dealerHand);
+        updateScores(true);
+
+        if (dealerScore === 21) {
+            bank += currentBet;
+            endRound("Push. Both have Blackjack.");
+        } else {
+            bank += currentBet * 2.5;
+            endRound("Blackjack! You win!");
+        }
+        return;
+    }
 
     hitBtn.disabled = false;
     standBtn.disabled = false;
     doubleBtn.disabled = bank < currentBet;
+    splitBtn.disabled = !(playerHand.length === 2 && getCardSplitValue(playerHand[0]) === getCardSplitValue(playerHand[1]) && bank >= currentBet);
     dealBtn.disabled = true;
-    updateMoney();
-};
 
+    updateMoney();
 /* =======================
    PLAYER ACTIONS
 ======================= */
 hitBtn.onclick = () => {
     if (!gameActive) return;
 
-    playerHand.push(drawCard());
-    renderCards(playerCardsEl, playerHand);
-    updateScores(false);
+    const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
+    const activeCardsEl = currentHandIndex === 0 ? playerCardsEl : playerSplitCardsEl;
+    const activeScoreEl = currentHandIndex === 0 ? playerScoreEl : playerSplitScoreEl;
 
-    if (calculateScore(playerHand) > 21) {
-        endRound("Player busts. Dealer wins.");
+    activeHand.push(drawCard());
+    renderCards(activeCardsEl, activeHand);
+
+    doubleBtn.disabled = true;
+    splitBtn.disabled = true;
+
+    activeScoreEl.textContent = calculateScore(activeHand);
+
+    if (calculateScore(activeHand) > 21) {
+        if (isSplitActive && currentHandIndex === 0) {
+            currentHandIndex = 1;
+            updateActiveHandUI();
+        } else {
+            dealerTurn();
+        }
     }
 };
 
 standBtn.onclick = () => {
     if (!gameActive) return;
-    dealerTurn();
+
+    if (isSplitActive && currentHandIndex === 0) {
+        currentHandIndex = 1;
+        updateActiveHandUI();
+    } else {
+        dealerTurn();
+    }
+};
+
+doubleBtn.onclick = () => {
+    if (!gameActive) return;
+
+    // Deduct additional bet equal to current bet
+    if (bank < currentBet) return;
+    bank -= currentBet;
+    currentBet *= 2;
+
+    // Draw exactly one card
+    const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
+    const activeCardsEl = currentHandIndex === 0 ? playerCardsEl : playerSplitCardsEl;
+    const activeScoreEl = currentHandIndex === 0 ? playerScoreEl : playerSplitScoreEl;
+
+    activeHand.push(drawCard());
+    renderCards(activeCardsEl, activeHand);
+    activeScoreEl.textContent = calculateScore(activeHand);
+
+    updateMoney();
+
+    // Automatically stand (move to next hand or dealer turn)
+    if (isSplitActive && currentHandIndex === 0) {
+        currentHandIndex = 1;
+        updateActiveHandUI();
+    } else {
+        dealerTurn();
+    }
+};
+
+/* =======================
+   SPLIT LOGIC
+======================= */
+let playerSplitHand = [];
+let isSplitActive = false;
+let currentHandIndex = 0;
+
+const playerSplitCardsEl = document.getElementById("player-split-cards");
+const playerSplitScoreEl = document.getElementById("player-split-score");
+const playerSplitArea = document.getElementById("player-split-area");
+
+function updateActiveHandUI() {
+    const playerArea = document.querySelector(".player-area");
+
+    playerArea.classList.toggle("active-hand", currentHandIndex === 0);
+    playerSplitArea.classList.toggle("active-hand", currentHandIndex === 1);
+}
+
+playerCardsEl.onclick = () => {
+    if (!gameActive || !isSplitActive) return;
+    currentHandIndex = 0;
+    updateActiveHandUI();
+};
+
+playerSplitCardsEl.onclick = () => {
+    if (!gameActive || !isSplitActive) return;
+    currentHandIndex = 1;
+    updateActiveHandUI();
+};
+
+function getCardSplitValue(card) {
+    if (["10", "J", "Q", "K"].includes(card.value)) return 10;
+    return card.value;
+}
+
+splitBtn.onclick = () => {
+    if (!gameActive) return;
+
+    // Only allow split if 2 cards of same value
+    if (playerHand.length !== 2 || getCardSplitValue(playerHand[0]) !== getCardSplitValue(playerHand[1])) return;
+
+    if (bank < currentBet) return; // need equal bet
+
+    // Deduct second bet
+    bank -= currentBet;
+
+    // Split hands
+    playerSplitHand = [playerHand.pop()];
+    playerHand.push(drawCard());
+    playerSplitHand.push(drawCard());
+
+    isSplitActive = true;
+    currentHandIndex = 0;
+
+    // Show split area
+    playerSplitArea.style.display = "block";
+
+    renderCards(playerCardsEl, playerHand);
+    renderCards(playerSplitCardsEl, playerSplitHand);
+
+    updateScores(false);
+    playerSplitScoreEl.textContent = calculateScore(playerSplitHand);
+    updateActiveHandUI();
+   
+    updateMoney();
 };
 
 doubleBtn.onclick = () => {
@@ -299,24 +438,81 @@ function dealerTurn() {
    RESULT
 ======================= */
 function determineWinner() {
-
-    const playerScore = calculateScore(playerHand);
     const dealerScore = calculateScore(dealerHand);
 
-    if (playerHand.length === 2 && playerScore === 21) {
-        bank += currentBet * 2.5;
-        endRound("Blackjack! You win!");
+    if (!isSplitActive) {
+        const playerScore = calculateScore(playerHand);
+
+        if (playerHand.length === 2 && playerScore === 21) {
+            bank += currentBet * 2.5;
+            endRound("Blackjack! You win!");
+            return;
+        }
+
+        if (dealerScore > 21 || playerScore > dealerScore) {
+            bank += currentBet * 2;
+            endRound("You win!");
+        } else if (playerScore < dealerScore) {
+            endRound("Dealer wins.");
+        } else {
+            bank += currentBet;
+            endRound("Push.");
+        }
+
         return;
     }
-    
-    if (dealerScore > 21 || playerScore > dealerScore) {
+
+    const hand1Score = calculateScore(playerHand);
+    const hand2Score = calculateScore(playerSplitHand);
+
+   let hand1Result = "";
+    let hand2Result = "";
+
+    if (hand1Score > 21) {
+        hand1Result = "lose";
+    } else if (dealerScore > 21 || hand1Score > dealerScore) {
+        hand1Result = "win";
         bank += currentBet * 2;
-        endRound("You win!");
-    } else if (playerScore < dealerScore) {
-        endRound("Dealer wins.");
+    } else if (hand1Score < dealerScore) {
+        hand1Result = "lose";
     } else {
+        hand1Result = "push";
         bank += currentBet;
-        endRound("Push.");
+    }
+
+    if (hand2Score > 21) {
+        hand2Result = "lose";
+    } else if (dealerScore > 21 || hand2Score > dealerScore) {
+        hand2Result = "win";
+        bank += currentBet * 2;
+    } else if (hand2Score < dealerScore) {
+        hand2Result = "lose";
+    } else {
+        hand2Result = "push";
+        bank += currentBet;
+    }
+
+    if (hand1Result === "win" && hand2Result === "win") {
+        endRound("You won both hands!");
+    } else if (hand1Result === "lose" && hand2Result === "lose") {
+        endRound("You lost both hands.");
+    } else if (
+        (hand1Result === "win" && hand2Result === "lose") ||
+        (hand1Result === "lose" && hand2Result === "win")
+    ) {
+        endRound("You won one hand and lost the other hand.");
+    } else if (hand1Result === "push" && hand2Result === "push") {
+        endRound("Both hands pushed.");
+    } else if (
+        (hand1Result === "win" && hand2Result === "push") ||
+        (hand1Result === "push" && hand2Result === "win")
+    ) {
+        endRound("You won one hand and pushed the other.");
+    } else if (
+        (hand1Result === "lose" && hand2Result === "push") ||
+        (hand1Result === "push" && hand2Result === "lose")
+    ) {
+        endRound("You lost one hand and pushed the other.");
     }
 }
 
