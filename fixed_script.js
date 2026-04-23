@@ -258,6 +258,8 @@ dealBtn.onclick = () => {
     dealBtn.disabled = true;
 
     updateMoney();
+};
+
 /* =======================
    PLAYER ACTIONS
 ======================= */
@@ -575,6 +577,36 @@ document.getElementById("safe-bank-withdraw").onclick = () => {
 document.getElementById("safe-bank-cancel").onclick = () => {
     safeBankModal.style.display = "none";
 };
+
+/* =======================
+   NEW GAME / QUIT
+======================= */
+document.getElementById("menu-new-game").onclick = () => {
+    bank = 1000;
+    safeBank = 0;
+    currentBet = 0;
+    lastBet = 0;
+    gameActive = false;
+    deck = [];
+    dealerHand = [];
+    playerHand = [];
+    dealerCardsEl.innerHTML = "";
+    playerCardsEl.innerHTML = "";
+    dealerScoreEl.textContent = "0";
+    playerScoreEl.textContent = "0";
+    resultEl.textContent = "-";
+    hitBtn.disabled = true;
+    standBtn.disabled = true;
+    doubleBtn.disabled = true;
+    splitBtn.disabled = true;
+    dealBtn.disabled = true;
+    updateMoney();
+};
+
+const quitModal = document.getElementById("quit-modal");
+document.getElementById("menu-quit").onclick = () => quitModal.style.display = "flex";
+document.getElementById("quit-cancel").onclick = () => quitModal.style.display = "none";
+document.getElementById("quit-confirm").onclick = () => window.close();
 
 function dealCards() {
     deck = createDeck();
