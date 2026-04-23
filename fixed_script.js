@@ -534,7 +534,13 @@ function endRound(message) {
     standBtn.disabled = true;
     doubleBtn.disabled = true;
     splitBtn.disabled = true;
-    dealBtn.disabled = false;
+
+    if (bank <= 0 && safeBank <= 0) {
+        dealBtn.disabled = true;
+        resultEl.textContent = message + " You're out of money! Click New Game to restart.";
+    } else {
+        dealBtn.disabled = false;
+    }
 
     updateMoney();
 }
