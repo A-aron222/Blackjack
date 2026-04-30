@@ -278,7 +278,15 @@ hitBtn.onclick = () => {
 
     activeScoreEl.textContent = calculateScore(activeHand);
 
-    if (calculateScore(activeHand) > 21) {
+    const score = calculateScore(activeHand);
+    if (score > 21) {
+        if (isSplitActive && currentHandIndex === 0) {
+            currentHandIndex = 1;
+            updateActiveHandUI();
+        } else {
+            dealerTurn();
+        }
+    } else if (score === 21) {
         if (isSplitActive && currentHandIndex === 0) {
             currentHandIndex = 1;
             updateActiveHandUI();
