@@ -215,6 +215,11 @@ dealBtn.onclick = () => {
     lastBet = currentBet;
     resultEl.textContent = "-";
 
+    dealerCardsEl.innerHTML = "";
+    playerCardsEl.innerHTML = "";
+    dealerScoreEl.textContent = "0";
+    playerScoreEl.textContent = "0";
+
     deck = createDeck();
     shuffle(deck);
 
