@@ -116,6 +116,36 @@ function calculateScore(hand) {
     return score;
 }
 
+function isNaturalBlackjack(hand) {
+    return hand.length === 2 && calculateScore(hand) === 21;
+}
+
+function checkInitialBlackjack() {
+    const playerBlackjack = isNaturalBlackjack(playerHand);
+    const dealerBlackjack = isNaturalBlackjack(dealerHand);
+
+    if (!playerBlackjack && !dealerBlackjack) {
+        return false;
+    }
+
+    renderCards(dealerCardsEl, dealerHand);
+    updateScores(true);
+
+    const mainBet = handBets[0];
+
+    if (playerBlackjack && dealerBlackjack) {
+        bank += mainBet;
+        endRound("Both have blackjack. Push.");
+    } else if (playerBlackjack) {
+        bank += mainBet * 2.5;
+        endRound("Blackjack! You win 3:2.");
+    } else {
+        endRound("Dealer has blackjack. Dealer wins.");
+    }
+
+    return true;
+}
+
 /* =======================
    RENDERING
 ======================= */
