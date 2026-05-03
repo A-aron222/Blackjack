@@ -50,6 +50,15 @@ let currentBet = 0;
 let lastBet = 0;
 let gameActive = false;
 
+// Tracks the real bet attached to each player hand.
+// handBets[0] = Player Hand 1
+// handBets[1] = Player Hand 2 after split
+let handBets = [0, 0];
+
+function getTotalActiveBet() {
+    return handBets[0] + handBets[1];
+}
+
 /* =======================
    DECK LOGIC
 ======================= */
@@ -215,11 +224,6 @@ dealBtn.onclick = () => {
     lastBet = currentBet;
     resultEl.textContent = "-";
 
-    dealerCardsEl.innerHTML = "";
-    playerCardsEl.innerHTML = "";
-    dealerScoreEl.textContent = "0";
-    playerScoreEl.textContent = "0";
-
     deck = createDeck();
     shuffle(deck);
 
@@ -237,24 +241,7 @@ dealBtn.onclick = () => {
     renderCards(playerCardsEl, playerHand);
     renderCards(dealerCardsEl, dealerHand, 1);
 
-        updateScores(false);
-
-    const playerScore = calculateScore(playerHand);
-    const dealerScore = calculateScore(dealerHand);
-
-    if (playerHand.length === 2 && playerScore === 21) {
-        renderCards(dealerCardsEl, dealerHand);
-        updateScores(true);
-
-        if (dealerScore === 21) {
-            bank += currentBet;
-            endRound("Push. Both have Blackjack.");
-        } else {
-            bank += currentBet * 2.5;
-            endRound("Blackjack! You win!");
-        }
-        return;
-    }
+    updateScores(false);
 
     hitBtn.disabled = false;
     standBtn.disabled = false;
@@ -264,7 +251,6 @@ dealBtn.onclick = () => {
 
     updateMoney();
 };
-
 /* =======================
    PLAYER ACTIONS
 ======================= */
@@ -283,15 +269,7 @@ hitBtn.onclick = () => {
 
     activeScoreEl.textContent = calculateScore(activeHand);
 
-    const score = calculateScore(activeHand);
-    if (score > 21) {
-        if (isSplitActive && currentHandIndex === 0) {
-            currentHandIndex = 1;
-            updateActiveHandUI();
-        } else {
-            dealerTurn();
-        }
-    } else if (score === 21) {
+    if (calculateScore(activeHand) > 21) {
         if (isSplitActive && currentHandIndex === 0) {
             currentHandIndex = 1;
             updateActiveHandUI();
@@ -405,21 +383,6 @@ splitBtn.onclick = () => {
     updateActiveHandUI();
    
     updateMoney();
-};
-
-doubleBtn.onclick = () => {
-    if (!gameActive || playerHand.length !== 2 || bank < currentBet) return;
-    bank = Math.round((bank - currentBet) * 100) / 100;
-    currentBet = Math.round((currentBet * 2) * 100) / 100;
-    playerHand.push(drawCard());
-    renderCards(playerCardsEl, playerHand);
-    updateScores(false);
-    updateMoney();
-    if (calculateScore(playerHand) > 21) {
-        endRound("Player busts. Dealer wins.");
-    } else {
-        dealerTurn();
-    }
 };
 
 /* =======================
@@ -547,13 +510,7 @@ function endRound(message) {
     standBtn.disabled = true;
     doubleBtn.disabled = true;
     splitBtn.disabled = true;
-
-    if (bank <= 0 && safeBank <= 0) {
-        dealBtn.disabled = true;
-        resultEl.textContent = message + " You're out of money! Click New Game to restart.";
-    } else {
-        dealBtn.disabled = false;
-    }
+    dealBtn.disabled = false;
 
     updateMoney();
 }
@@ -596,36 +553,6 @@ document.getElementById("safe-bank-withdraw").onclick = () => {
 document.getElementById("safe-bank-cancel").onclick = () => {
     safeBankModal.style.display = "none";
 };
-
-/* =======================
-   NEW GAME / QUIT
-======================= */
-document.getElementById("menu-new-game").onclick = () => {
-    bank = 1000;
-    safeBank = 0;
-    currentBet = 0;
-    lastBet = 0;
-    gameActive = false;
-    deck = [];
-    dealerHand = [];
-    playerHand = [];
-    dealerCardsEl.innerHTML = "";
-    playerCardsEl.innerHTML = "";
-    dealerScoreEl.textContent = "0";
-    playerScoreEl.textContent = "0";
-    resultEl.textContent = "-";
-    hitBtn.disabled = true;
-    standBtn.disabled = true;
-    doubleBtn.disabled = true;
-    splitBtn.disabled = true;
-    dealBtn.disabled = true;
-    updateMoney();
-};
-
-const quitModal = document.getElementById("quit-modal");
-document.getElementById("menu-quit").onclick = () => quitModal.style.display = "flex";
-document.getElementById("quit-cancel").onclick = () => quitModal.style.display = "none";
-document.getElementById("quit-confirm").onclick = () => window.close();
 
 function dealCards() {
     deck = createDeck();
