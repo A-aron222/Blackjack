@@ -248,7 +248,7 @@ body {
     border-radius: 8px;
     position: relative;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    overflow: visible;
+    overflow: hidden;
     transform-style: preserve-3d;
     transition: transform 0.3s ease-out;
 }
@@ -276,28 +276,73 @@ body {
     opacity: 0.8;
 }
 
-.card-value, .card-suit {
-    font-weight: bold;
-    line-height: 1;
+/* =======================
+   CARD CORNER LABELS
+======================= */
+.card-corner {
     position: absolute;
-    z-index: 1;
+    font-size: 0.75em;
+    font-weight: bold;
+    line-height: 1.1;
+    text-align: center;
+    z-index: 2;
     color: #000;
 }
 
-.card-value {
-    top: 5px;
+.card-corner.top-left {
+    top: 4px;
     left: 5px;
-    font-size: 1.2em;
 }
 
-.card-suit {
+.card-corner.bottom-right {
+    bottom: 4px;
+    right: 5px;
+    transform: rotate(180deg);
+}
+
+.card-corner.red {
+    color: #d40000;
+}
+
+/* =======================
+   PIP FIELD
+======================= */
+.pip-field {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.pip {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-size: 1.1em;
+    line-height: 1;
+    color: #000;
+    user-select: none;
+}
+
+.pip.red {
+    color: #d40000;
+}
+
+/* =======================
+   FACE CARD CENTER SUIT
+======================= */
+.card-center-suit {
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 2em;
+    font-size: 2.2em;
+    color: #000;
+    z-index: 1;
 }
 
-.card-value.red, .card-suit.red {
+.card-center-suit.red {
     color: #d40000;
 }
 
@@ -422,19 +467,19 @@ body {
 }
 
 .chip-001 { 
-    background: radial-gradient(circle at 30% 30%, #cd7f32, #8b5523); /* Bronze */
+    background: radial-gradient(circle at 30% 30%, #cd7f32, #8b5523);
 }
 
 .chip-005 { 
-    background: radial-gradient(circle at 30% 30%, #c0c0c0, #808080); /* Silver */
+    background: radial-gradient(circle at 30% 30%, #c0c0c0, #808080);
 }
 
 .chip-010 { 
-    background: radial-gradient(circle at 30% 30%, #c3f1ed, #062e29); /* Teal */
+    background: radial-gradient(circle at 30% 30%, #c3f1ed, #062e29);
 }
 
 .chip-025 { 
-    background: radial-gradient(circle at 30% 30%, #ba68c8, #6a1b9a); /* Purple */
+    background: radial-gradient(circle at 30% 30%, #ba68c8, #6a1b9a);
 }
 
 .chip-1 { 
@@ -779,15 +824,17 @@ body {
         width: 70px;
         height: 105px;
     }
-    
-    .card-value {
-        top: 3px;
-        left: 3px;
-        font-size: 1em;
+
+    .card-corner {
+        font-size: 0.65em;
     }
-    
-    .card-suit {
-        font-size: 1.6em;
+
+    .pip {
+        font-size: 0.9em;
+    }
+
+    .card-center-suit {
+        font-size: 1.8em;
     }
     
     .chip {
@@ -836,15 +883,17 @@ body {
         width: 55px;
         height: 85px;
     }
-    
-    .card-value {
-        top: 2px;
-        left: 2px;
-        font-size: 0.8em;
+
+    .card-corner {
+        font-size: 0.55em;
     }
-    
-    .card-suit {
-        font-size: 1.2em;
+
+    .pip {
+        font-size: 0.7em;
+    }
+
+    .card-center-suit {
+        font-size: 1.4em;
     }
     
     .chip {

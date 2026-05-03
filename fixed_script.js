@@ -147,20 +147,79 @@ function checkInitialBlackjack() {
 }
 
 /* =======================
+   PIP LAYOUTS
+   Each array entry is [col, row] in a 3-col x 7-row grid (1-indexed)
+   col: 1=left, 2=center, 3=right
+   row: 1=top ... 7=bottom
+======================= */
+const PIP_LAYOUTS = {
+    "A": [[2, 4]],
+    "2": [[2, 1], [2, 7]],
+    "3": [[2, 1], [2, 4], [2, 7]],
+    "4": [[1, 1], [3, 1], [1, 7], [3, 7]],
+    "5": [[1, 1], [3, 1], [2, 4], [1, 7], [3, 7]],
+    "6": [[1, 1], [3, 1], [1, 4], [3, 4], [1, 7], [3, 7]],
+    "7": [[1, 1], [3, 1], [2, 2.5], [1, 4], [3, 4], [1, 7], [3, 7]],
+    "8": [[1, 1], [3, 1], [2, 2.5], [1, 4], [3, 4], [2, 5.5], [1, 7], [3, 7]],
+    "9": [[1, 1], [3, 1], [1, 3], [3, 3], [2, 4], [1, 5], [3, 5], [1, 7], [3, 7]],
+    "10": [[1, 1], [3, 1], [2, 2], [1, 3], [3, 3], [1, 5], [3, 5], [2, 6], [1, 7], [3, 7]],
+};
+
+/* =======================
    RENDERING
 ======================= */
+function createCardElement(card, hidden = false) {
+    const div = document.createElement("div");
+ 
+    if (hidden) {
+        div.className = "card card-back";
+        return div;
+    }
+ 
+    const isRed = card.suit === "♥" || card.suit === "♦";
+    const colorClass = isRed ? "red" : "";
+    div.className = "card";
+ 
+    const isFaceCard = ["J", "Q", "K", "A"].includes(card.value);
+ 
+    if (isFaceCard) {
+        // Face cards and Ace: classic corner + center layout
+        div.innerHTML = `
+            <span class="card-corner top-left ${colorClass}">${card.value}<br>${card.suit}</span>
+            <span class="card-center-suit ${colorClass}">${card.suit}</span>
+            <span class="card-corner bottom-right ${colorClass}">${card.value}<br>${card.suit}</span>
+        `;
+    } else {
+        // Pip cards: render exact pip positions
+        const layout = PIP_LAYOUTS[card.value];
+        const pipsHtml = layout.map(([col, row]) => {
+            // col: 1->20%, 2->50%, 3->80%
+            // row: 1->15% ... 7->85%
+            const x = col === 1 ? 20 : col === 2 ? 50 : 80;
+            const y = 15 + ((row - 1) / 6) * 70;
+ 
+            // Pips in bottom half are flipped — use extra class, not inline transform
+            const flipClass = row > 4 ? "pip-flip" : "";
+ 
+            return `<span class="pip ${colorClass} ${flipClass}" style="left:${x}%;top:${y}%">${card.suit}</span>`;
+        }).join("");
+ 
+        div.innerHTML = `
+            <span class="card-corner top-left ${colorClass}">${card.value}<br>${card.suit}</span>
+            <div class="pip-field">${pipsHtml}</div>
+            <span class="card-corner bottom-right ${colorClass}">${card.value}<br>${card.suit}</span>
+        `;
+    }
+ 
+    return div;
+}
+
 function renderCards(container, hand, hideLastN = 0) {
     container.innerHTML = "";
     hand.forEach((card, index) => {
-        const div = document.createElement("div");
         const isHidden = index >= hand.length - hideLastN;
-        if (isHidden) {
-            div.className = "card card-back";
-        } else {
-            div.className = "card";
-            div.innerHTML = `<span class="card-value ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.value}</span><span class="card-suit ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.suit}</span><span class="card-value-bottom ${card.suit === "♥" || card.suit === "♦" ? "red" : ""}">${card.value}</span>`;
-        }
-        container.appendChild(div);
+        const el = createCardElement(card, isHidden);
+        container.appendChild(el);
     });
 }
 
