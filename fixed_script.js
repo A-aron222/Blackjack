@@ -170,9 +170,12 @@ function updateScores(showDealer = false) {
 }
 
 function updateMoney() {
+    const displayedBet = gameActive ? getTotalActiveBet() : currentBet;
+
     bankEl.textContent = `$${bank.toFixed(2)}`;
-    betEl.textContent = `$${currentBet.toFixed(2)}`;
+    betEl.textContent = `$${displayedBet.toFixed(2)}`;
     safeBankAmountEl.textContent = `$${safeBank.toFixed(2)}`;
+
     chips.forEach(chip => {
         chip.classList.toggle("disabled", gameActive);
     });
@@ -252,6 +255,7 @@ dealBtn.onclick = () => {
 
     gameActive = true;
     lastBet = currentBet;
+    handBets = [currentBet, 0];
     resultEl.textContent = "-";
 
     deck = createDeck();
@@ -325,8 +329,9 @@ doubleBtn.onclick = () => {
 
     // Deduct additional bet equal to current bet
     if (bank < currentBet) return;
-    bank -= currentBet;
-    currentBet *= 2;
+    bank -= handBets[currentHandIndex];
+    handBets[currentHandIndex] *= 2;
+    currentBet = getTotalActiveBet();
 
     // Draw exactly one card
     const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
@@ -457,7 +462,9 @@ function determineWinner() {
             return;
         }
 
-        if (dealerScore > 21 || playerScore > dealerScore) {
+        if (playerScore > 21) {
+            endRound("Bust! Dealer wins.");
+        } else if (playerScore <= 21 && (dealerScore > 21 || playerScore > dealerScore)) {
             bank += currentBet * 2;
             endRound("You win!");
         } else if (playerScore < dealerScore) {
