@@ -598,6 +598,7 @@ function endRound(message) {
     resultEl.textContent = message;
     currentBet = 0;
     gameActive = false;
+    isSplitActive = false;
 
     renderCards(dealerCardsEl, dealerHand);
     updateScores(true);
@@ -606,7 +607,13 @@ function endRound(message) {
     standBtn.disabled = true;
     doubleBtn.disabled = true;
     splitBtn.disabled = true;
-    dealBtn.disabled = false;
+
+    if (bank <= 0 && safeBank <= 0) {
+        dealBtn.disabled = true;
+        resultEl.textContent = message + " You're out of money! Click New Game to restart.";
+    } else {
+        dealBtn.disabled = false;
+    }
 
     updateMoney();
 }
@@ -649,6 +656,40 @@ document.getElementById("safe-bank-withdraw").onclick = () => {
 document.getElementById("safe-bank-cancel").onclick = () => {
     safeBankModal.style.display = "none";
 };
+
+/* =======================
+   NEW GAME / QUIT
+======================= */
+document.getElementById("menu-new-game").onclick = () => {
+    bank = 1000;
+    safeBank = 0;
+    currentBet = 0;
+    lastBet = 0;
+    gameActive = false;
+    isSplitActive = false;
+    deck = [];
+    dealerHand = [];
+    playerHand = [];
+    playerSplitHand = [];
+    dealerCardsEl.innerHTML = "";
+    playerCardsEl.innerHTML = "";
+    playerSplitCardsEl.innerHTML = "";
+    playerSplitArea.style.display = "none";
+    dealerScoreEl.textContent = "0";
+    playerScoreEl.textContent = "0";
+    resultEl.textContent = "-";
+    hitBtn.disabled = true;
+    standBtn.disabled = true;
+    doubleBtn.disabled = true;
+    splitBtn.disabled = true;
+    dealBtn.disabled = true;
+    updateMoney();
+};
+
+const quitModal = document.getElementById("quit-modal");
+document.getElementById("menu-quit").onclick = () => quitModal.style.display = "flex";
+document.getElementById("quit-cancel").onclick = () => quitModal.style.display = "none";
+document.getElementById("quit-confirm").onclick = () => window.close();
 
 function dealCards() {
     deck = createDeck();
