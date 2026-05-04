@@ -180,32 +180,25 @@ function createCardElement(card, hidden = false) {
   const isFaceCard = ["J", "Q", "K", "A"].includes(card.value);
 
   if (isFaceCard) {
-    // Face cards and Ace: classic corner + center layout
     div.innerHTML = `
-            <span class="card-corner top-left ${colorClass}">${card.value}<br>${card.suit}</span>
-            <span class="card-center-suit ${colorClass}">${card.suit}</span>
-            <span class="card-corner bottom-right ${colorClass}">${card.value}<br>${card.suit}</span>
-        `;
+      <span class="card-corner top-left ${colorClass}">${card.value}<br>${card.suit}</span>
+      <span class="card-center-suit ${colorClass}">${card.suit}</span>
+      <span class="card-corner bottom-right ${colorClass}">${card.value}<br>${card.suit}</span>
+    `;
   } else {
-    // Pip cards: render exact pip positions
     const layout = PIP_LAYOUTS[card.value];
     const pipsHtml = layout.map(([col, row]) => {
-      // col: 1->20%, 2->50%, 3->80%
-      // row: 1->15% ... 7->85%
       const x = col === 1 ? 20 : col === 2 ? 50 : 80;
       const y = 15 + ((row - 1) / 6) * 70;
-
-      // Pips in bottom half are flipped — use extra class, not inline transform
       const flipClass = row > 4 ? "pip-flip" : "";
-
       return `<span class="pip ${colorClass} ${flipClass}" style="left:${x}%;top:${y}%">${card.suit}</span>`;
     }).join("");
 
     div.innerHTML = `
-            <span class="card-corner top-left ${colorClass}">${card.value}<br>${card.suit}</span>
-            <div class="pip-field">${pipsHtml}</div>
-            <span class="card-corner bottom-right ${colorClass}">${card.value}<br>${card.suit}</span>
-        `;
+      <span class="card-corner top-left ${colorClass}">${card.value}<br>${card.suit}</span>
+      <div class="pip-field">${pipsHtml}</div>
+      <span class="card-corner bottom-right ${colorClass}">${card.value}<br>${card.suit}</span>
+    `;
   }
 
   return div;
@@ -220,12 +213,12 @@ function renderCards(container, hand, hideLastN = 0) {
   });
 }
 
-// Animate the last card in a container with the deal animation
-function animateNewCard(container) {
-  const card = container.lastElementChild;
-  if (!card) return;
-  card.classList.add("dealing");
-  card.addEventListener("animationend", () => card.classList.remove("dealing"), { once: true });
+// Append a single card element to a container and animate it
+function appendAnimatedCard(container, card, hidden = false) {
+  const el = createCardElement(card, hidden);
+  container.appendChild(el);
+  el.classList.add("dealing");
+  el.addEventListener("animationend", () => el.classList.remove("dealing"), { once: true });
 }
 
 // Deal opening 4 cards one at a time: player1, dealer1, player2, dealer2 (face down)
@@ -233,46 +226,53 @@ function dealOpeningCards() {
   return new Promise(resolve => {
     const DELAY = 320;
 
+    // Card 1: player card 1
     setTimeout(() => {
-      renderCards(playerCardsEl, [playerHand[0]]);
-      animateNewCard(playerCardsEl);
+      playerCardsEl.innerHTML = "";
+      appendAnimatedCard(playerCardsEl, playerHand[0]);
       updateScores(false);
     }, DELAY * 0);
 
+    // Card 2: dealer card 1 (face up)
     setTimeout(() => {
-      renderCards(dealerCardsEl, [dealerHand[0]]);
-      animateNewCard(dealerCardsEl);
+      dealerCardsEl.innerHTML = "";
+      appendAnimatedCard(dealerCardsEl, dealerHand[0]);
     }, DELAY * 1);
 
+    // Card 3: player card 2
     setTimeout(() => {
-      renderCards(playerCardsEl, playerHand);
-      animateNewCard(playerCardsEl);
+      appendAnimatedCard(playerCardsEl, playerHand[1]);
       updateScores(false);
     }, DELAY * 2);
 
+    // Card 4: dealer card 2 (face down)
     setTimeout(() => {
-      renderCards(dealerCardsEl, dealerHand, 1);
-      animateNewCard(dealerCardsEl);
+      appendAnimatedCard(dealerCardsEl, dealerHand[1], true);
       resolve();
     }, DELAY * 3);
   });
 }
 
-// Deal dealer extra cards one at a time (after initial reveal)
-function dealDealerCards(startIndex) {
+// Deal dealer extra cards one at a time, drawing each card just before animating it
+function dealDealerCards() {
   return new Promise(resolve => {
-    const DELAY = 500;
-    const extras = dealerHand.slice(startIndex);
-    if (extras.length === 0) { resolve(); return; }
+    const ANIM_DURATION = 400;
+    const INTERVAL = ANIM_DURATION + 100; // wait for animation to finish + small gap
 
-    extras.forEach((_, i) => {
+    function dealNext() {
+      if (calculateScore(dealerHand) >= 17) {
+        setTimeout(resolve, ANIM_DURATION);
+        return;
+      }
       setTimeout(() => {
-        renderCards(dealerCardsEl, dealerHand);
-        animateNewCard(dealerCardsEl);
+        const card = drawCard();
+        dealerHand.push(card);
+        appendAnimatedCard(dealerCardsEl, card);
         updateScores(true);
-        if (i === extras.length - 1) resolve();
-      }, DELAY * i);
-    });
+        dealNext();
+      }, INTERVAL);
+    }
+    dealNext();
   });
 }
 
@@ -383,7 +383,7 @@ dealBtn.onclick = () => {
   playerSplitScoreEl.textContent = "0";
   updateActiveHandUI();
 
-  // Lock buttons during deal animation
+  // Lock all buttons during deal animation
   hitBtn.disabled = true;
   standBtn.disabled = true;
   doubleBtn.disabled = true;
@@ -430,6 +430,14 @@ hitBtn.onclick = () => {
     }
   }
 };
+
+// Animate the last card in a container with the deal animation
+function animateNewCard(container) {
+  const card = container.lastElementChild;
+  if (!card) return;
+  card.classList.add("dealing");
+  card.addEventListener("animationend", () => card.classList.remove("dealing"), { once: true });
+}
 
 standBtn.onclick = () => {
   if (!gameActive) return;
@@ -538,16 +546,6 @@ splitBtn.onclick = () => {
 /* =======================
    DEALER LOGIC
 ======================= */
-function animateReveal(container) {
-  const lastCard = container.lastElementChild;
-  if (!lastCard) return;
-
-  lastCard.classList.add("revealing");
-  lastCard.addEventListener("animationend", () => {
-    lastCard.classList.remove("revealing");
-  }, { once: true });
-}
-
 function dealerTurn() {
   // Disable buttons during dealer turn
   hitBtn.disabled = true;
@@ -555,20 +553,22 @@ function dealerTurn() {
   doubleBtn.disabled = true;
   splitBtn.disabled = true;
 
-  // Reveal the hidden card
-  renderCards(dealerCardsEl, dealerHand);
-  animateReveal(dealerCardsEl);
+  // Replace the face-down card with the face-up card using reveal animation
+  const hiddenCardEl = dealerCardsEl.lastElementChild;
+  if (hiddenCardEl) {
+    const revealedEl = createCardElement(dealerHand[1]);
+    revealedEl.classList.add("revealing");
+    revealedEl.addEventListener("animationend", () => revealedEl.classList.remove("revealing"), { once: true });
+    hiddenCardEl.replaceWith(revealedEl);
+  }
   updateScores(true);
 
-  // Draw extra cards until 17+, then add them all at once and animate one by one
-  const startIndex = dealerHand.length;
-  while (calculateScore(dealerHand) < 17) {
-    dealerHand.push(drawCard());
-  }
-
-  dealDealerCards(startIndex).then(() => {
-    determineWinner();
-  });
+  // Brief pause after reveal, then draw extra cards one at a time
+  setTimeout(() => {
+    dealDealerCards().then(() => {
+      determineWinner();
+    });
+  }, 320);
 }
 
 /* =======================
@@ -726,29 +726,29 @@ document.getElementById("safe-bank-cancel").onclick = () => {
    NEW GAME / QUIT
 ======================= */
 document.getElementById("menu-new-game").onclick = () => {
-    bank = 1000;
-    safeBank = 0;
-    currentBet = 0;
-    lastBet = 0;
-    gameActive = false;
-    isSplitActive = false;
-    deck = [];
-    dealerHand = [];
-    playerHand = [];
-    playerSplitHand = [];
-    dealerCardsEl.innerHTML = "";
-    playerCardsEl.innerHTML = "";
-    playerSplitCardsEl.innerHTML = "";
-    playerSplitArea.style.display = "none";
-    dealerScoreEl.textContent = "0";
-    playerScoreEl.textContent = "0";
-    resultEl.textContent = "-";
-    hitBtn.disabled = true;
-    standBtn.disabled = true;
-    doubleBtn.disabled = true;
-    splitBtn.disabled = true;
-    dealBtn.disabled = true;
-    updateMoney();
+  bank = 1000;
+  safeBank = 0;
+  currentBet = 0;
+  lastBet = 0;
+  gameActive = false;
+  isSplitActive = false;
+  deck = [];
+  dealerHand = [];
+  playerHand = [];
+  playerSplitHand = [];
+  dealerCardsEl.innerHTML = "";
+  playerCardsEl.innerHTML = "";
+  playerSplitCardsEl.innerHTML = "";
+  playerSplitArea.style.display = "none";
+  dealerScoreEl.textContent = "0";
+  playerScoreEl.textContent = "0";
+  resultEl.textContent = "-";
+  hitBtn.disabled = true;
+  standBtn.disabled = true;
+  doubleBtn.disabled = true;
+  splitBtn.disabled = true;
+  dealBtn.disabled = true;
+  updateMoney();
 };
 
 const quitModal = document.getElementById("quit-modal");
