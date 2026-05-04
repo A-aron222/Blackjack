@@ -32,9 +32,9 @@ document.getElementById("help-close-Button").onclick = () => helpModal.style.dis
 
 const modalCloseBtn = document.getElementById("modal-close");
 if (modalCloseBtn) {
-    modalCloseBtn.onclick = () => {
-        document.getElementById("game-modal").style.display = "none";
-    };
+  modalCloseBtn.onclick = () => {
+    document.getElementById("game-modal").style.display = "none";
+  };
 }
 
 /* =======================
@@ -50,100 +50,97 @@ let currentBet = 0;
 let lastBet = 0;
 let gameActive = false;
 
-// Tracks the real bet attached to each player hand.
-// handBets[0] = Player Hand 1
-// handBets[1] = Player Hand 2 after split
 let handBets = [0, 0];
 
 function getTotalActiveBet() {
-    return handBets[0] + handBets[1];
+  return handBets[0] + handBets[1];
 }
 
 /* =======================
    DECK LOGIC
 ======================= */
 function createDeck() {
-    const suits = ["♠", "♥", "♦", "♣"];
-    const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-    const newDeck = [];
+  const suits = ["♠", "♥", "♦", "♣"];
+  const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+  const newDeck = [];
 
-    for (let suit of suits) {
-        for (let value of values) {
-            newDeck.push({ suit, value });
-        }
+  for (let suit of suits) {
+    for (let value of values) {
+      newDeck.push({ suit, value });
     }
-    return newDeck;
+  }
+  return newDeck;
 }
 
 function shuffle(deck) {
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
 }
 
 function drawCard() {
-    if (deck.length === 0) {
-        deck = createDeck();
-        shuffle(deck);
-    }
-    return deck.pop();
+  if (deck.length === 0) {
+    deck = createDeck();
+    shuffle(deck);
+  }
+  return deck.pop();
 }
 
 /* =======================
    SCORING
 ======================= */
 function calculateScore(hand) {
-    let score = 0;
-    let aces = 0;
+  let score = 0;
+  let aces = 0;
 
-    for (let card of hand) {
-        if (card.value === "A") {
-            aces++;
-            score += 11;
-        } else if (["K", "Q", "J"].includes(card.value)) {
-            score += 10;
-        } else {
-            score += parseInt(card.value);
-        }
+  for (let card of hand) {
+    if (card.value === "A") {
+      aces++;
+      score += 11;
+    } else if (["K", "Q", "J"].includes(card.value)) {
+      score += 10;
+    } else {
+      score += parseInt(card.value);
     }
+  }
 
-    while (score > 21 && aces > 0) {
-        score -= 10;
-        aces--;
-    }
+  while (score > 21 && aces > 0) {
+    score -= 10;
+    aces--;
+  }
 
-    return score;
+  return score;
 }
 
 function isNaturalBlackjack(hand) {
-    return hand.length === 2 && calculateScore(hand) === 21;
+  return hand.length === 2 && calculateScore(hand) === 21;
 }
 
 function checkInitialBlackjack() {
-    const playerBlackjack = isNaturalBlackjack(playerHand);
-    const dealerBlackjack = isNaturalBlackjack(dealerHand);
+  const playerBlackjack = isNaturalBlackjack(playerHand);
+  const dealerBlackjack = isNaturalBlackjack(dealerHand);
 
-    if (!playerBlackjack && !dealerBlackjack) {
-        return false;
-    }
+  if (!playerBlackjack && !dealerBlackjack) {
+    return false;
+  }
 
-    renderCards(dealerCardsEl, dealerHand);
-    updateScores(true);
+  renderCards(dealerCardsEl, dealerHand);
+  updateScores(true);
 
-    const mainBet = handBets[0];
+  const mainBet = handBets[0];
 
-    if (playerBlackjack && dealerBlackjack) {
-        bank += mainBet;
-        endRound("Both have blackjack. Push.");
-    } else if (playerBlackjack) {
-        bank += mainBet * 2.5;
-        endRound("Blackjack! You win 3:2.");
-    } else {
-        endRound("Dealer has blackjack. Dealer wins.");
-    }
+  if (playerBlackjack && dealerBlackjack) {
+    bank += mainBet;
+    endRound("Both have blackjack. Push.");
+  } else if (playerBlackjack) {
+    bank += mainBet * 2.5;
+    endRound("Blackjack! You win 3:2.");
+  } else {
+    endRound("Dealer has blackjack. Dealer wins.");
+  }
 
-    return true;
+  return true;
 }
 
 /* =======================
@@ -153,263 +150,324 @@ function checkInitialBlackjack() {
    row: 1=top ... 7=bottom
 ======================= */
 const PIP_LAYOUTS = {
-    "A": [[2, 4]],
-    "2": [[2, 1], [2, 7]],
-    "3": [[2, 1], [2, 4], [2, 7]],
-    "4": [[1, 1], [3, 1], [1, 7], [3, 7]],
-    "5": [[1, 1], [3, 1], [2, 4], [1, 7], [3, 7]],
-    "6": [[1, 1], [3, 1], [1, 4], [3, 4], [1, 7], [3, 7]],
-    "7": [[1, 1], [3, 1], [2, 2.5], [1, 4], [3, 4], [1, 7], [3, 7]],
-    "8": [[1, 1], [3, 1], [2, 2.5], [1, 4], [3, 4], [2, 5.5], [1, 7], [3, 7]],
-    "9": [[1, 1], [3, 1], [1, 3], [3, 3], [2, 4], [1, 5], [3, 5], [1, 7], [3, 7]],
-    "10": [[1, 1], [3, 1], [2, 2], [1, 3], [3, 3], [1, 5], [3, 5], [2, 6], [1, 7], [3, 7]],
+  "A": [[2, 4]],
+  "2": [[2, 1], [2, 7]],
+  "3": [[2, 1], [2, 4], [2, 7]],
+  "4": [[1, 1], [3, 1], [1, 7], [3, 7]],
+  "5": [[1, 1], [3, 1], [2, 4], [1, 7], [3, 7]],
+  "6": [[1, 1], [3, 1], [1, 4], [3, 4], [1, 7], [3, 7]],
+  "7": [[1, 1], [3, 1], [2, 2.5], [1, 4], [3, 4], [1, 7], [3, 7]],
+  "8": [[1, 1], [3, 1], [2, 2.5], [1, 4], [3, 4], [2, 5.5], [1, 7], [3, 7]],
+  "9": [[1, 1], [3, 1], [1, 3], [3, 3], [2, 4], [1, 5], [3, 5], [1, 7], [3, 7]],
+  "10": [[1, 1], [3, 1], [2, 2], [1, 3], [3, 3], [1, 5], [3, 5], [2, 6], [1, 7], [3, 7]],
 };
 
 /* =======================
-   RENDERING
+   CARD RENDERING
 ======================= */
 function createCardElement(card, hidden = false) {
-    const div = document.createElement("div");
- 
-    if (hidden) {
-        div.className = "card card-back";
-        return div;
-    }
- 
-    const isRed = card.suit === "♥" || card.suit === "♦";
-    const colorClass = isRed ? "red" : "";
-    div.className = "card";
- 
-    const isFaceCard = ["J", "Q", "K", "A"].includes(card.value);
- 
-    if (isFaceCard) {
-        // Face cards and Ace: classic corner + center layout
-        div.innerHTML = `
+  const div = document.createElement("div");
+
+  if (hidden) {
+    div.className = "card card-back";
+    return div;
+  }
+
+  const isRed = card.suit === "♥" || card.suit === "♦";
+  const colorClass = isRed ? "red" : "";
+  div.className = "card";
+
+  const isFaceCard = ["J", "Q", "K", "A"].includes(card.value);
+
+  if (isFaceCard) {
+    // Face cards and Ace: classic corner + center layout
+    div.innerHTML = `
             <span class="card-corner top-left ${colorClass}">${card.value}<br>${card.suit}</span>
             <span class="card-center-suit ${colorClass}">${card.suit}</span>
             <span class="card-corner bottom-right ${colorClass}">${card.value}<br>${card.suit}</span>
         `;
-    } else {
-        // Pip cards: render exact pip positions
-        const layout = PIP_LAYOUTS[card.value];
-        const pipsHtml = layout.map(([col, row]) => {
-            // col: 1->20%, 2->50%, 3->80%
-            // row: 1->15% ... 7->85%
-            const x = col === 1 ? 20 : col === 2 ? 50 : 80;
-            const y = 15 + ((row - 1) / 6) * 70;
- 
-            // Pips in bottom half are flipped — use extra class, not inline transform
-            const flipClass = row > 4 ? "pip-flip" : "";
- 
-            return `<span class="pip ${colorClass} ${flipClass}" style="left:${x}%;top:${y}%">${card.suit}</span>`;
-        }).join("");
- 
-        div.innerHTML = `
+  } else {
+    // Pip cards: render exact pip positions
+    const layout = PIP_LAYOUTS[card.value];
+    const pipsHtml = layout.map(([col, row]) => {
+      // col: 1->20%, 2->50%, 3->80%
+      // row: 1->15% ... 7->85%
+      const x = col === 1 ? 20 : col === 2 ? 50 : 80;
+      const y = 15 + ((row - 1) / 6) * 70;
+
+      // Pips in bottom half are flipped — use extra class, not inline transform
+      const flipClass = row > 4 ? "pip-flip" : "";
+
+      return `<span class="pip ${colorClass} ${flipClass}" style="left:${x}%;top:${y}%">${card.suit}</span>`;
+    }).join("");
+
+    div.innerHTML = `
             <span class="card-corner top-left ${colorClass}">${card.value}<br>${card.suit}</span>
             <div class="pip-field">${pipsHtml}</div>
             <span class="card-corner bottom-right ${colorClass}">${card.value}<br>${card.suit}</span>
         `;
-    }
- 
-    return div;
+  }
+
+  return div;
 }
 
 function renderCards(container, hand, hideLastN = 0) {
-    container.innerHTML = "";
-    hand.forEach((card, index) => {
-        const isHidden = index >= hand.length - hideLastN;
-        const el = createCardElement(card, isHidden);
-        container.appendChild(el);
+  container.innerHTML = "";
+  hand.forEach((card, index) => {
+    const isHidden = index >= hand.length - hideLastN;
+    const el = createCardElement(card, isHidden);
+    container.appendChild(el);
+  });
+}
+
+// Animate the last card in a container with the deal animation
+function animateNewCard(container) {
+  const card = container.lastElementChild;
+  if (!card) return;
+  card.classList.add("dealing");
+  card.addEventListener("animationend", () => card.classList.remove("dealing"), { once: true });
+}
+
+// Deal opening 4 cards one at a time: player1, dealer1, player2, dealer2 (face down)
+function dealOpeningCards() {
+  return new Promise(resolve => {
+    const DELAY = 320;
+
+    setTimeout(() => {
+      renderCards(playerCardsEl, [playerHand[0]]);
+      animateNewCard(playerCardsEl);
+      updateScores(false);
+    }, DELAY * 0);
+
+    setTimeout(() => {
+      renderCards(dealerCardsEl, [dealerHand[0]]);
+      animateNewCard(dealerCardsEl);
+    }, DELAY * 1);
+
+    setTimeout(() => {
+      renderCards(playerCardsEl, playerHand);
+      animateNewCard(playerCardsEl);
+      updateScores(false);
+    }, DELAY * 2);
+
+    setTimeout(() => {
+      renderCards(dealerCardsEl, dealerHand, 1);
+      animateNewCard(dealerCardsEl);
+      resolve();
+    }, DELAY * 3);
+  });
+}
+
+// Deal dealer extra cards one at a time (after initial reveal)
+function dealDealerCards(startIndex) {
+  return new Promise(resolve => {
+    const DELAY = 500;
+    const extras = dealerHand.slice(startIndex);
+    if (extras.length === 0) { resolve(); return; }
+
+    extras.forEach((_, i) => {
+      setTimeout(() => {
+        renderCards(dealerCardsEl, dealerHand);
+        animateNewCard(dealerCardsEl);
+        updateScores(true);
+        if (i === extras.length - 1) resolve();
+      }, DELAY * i);
     });
+  });
 }
 
 function updateScores(showDealer = false) {
-    playerScoreEl.textContent = calculateScore(playerHand);
-    dealerScoreEl.textContent = showDealer ? calculateScore(dealerHand) : dealerHand.length ? "?" : 0;
+  playerScoreEl.textContent = calculateScore(playerHand);
+  dealerScoreEl.textContent = showDealer ? calculateScore(dealerHand) : dealerHand.length ? "?" : 0;
 }
 
 function updateMoney() {
-    const displayedBet = gameActive ? getTotalActiveBet() : currentBet;
+  const displayedBet = gameActive ? getTotalActiveBet() : currentBet;
 
-    bankEl.textContent = `$${bank.toFixed(2)}`;
-    betEl.textContent = `$${displayedBet.toFixed(2)}`;
-    safeBankAmountEl.textContent = `$${safeBank.toFixed(2)}`;
-
-    chips.forEach(chip => {
-        chip.classList.toggle("disabled", gameActive);
-    });
+  bankEl.textContent = `$${bank.toFixed(2)}`;
+  betEl.textContent = `$${displayedBet.toFixed(2)}`;
+  safeBankAmountEl.textContent = `$${safeBank.toFixed(2)}`;
+  chips.forEach(chip => {
+    chip.classList.toggle("disabled", gameActive);
+  });
 }
 
 /* =======================
    BETTING
 ======================= */
 chips.forEach(chip => {
-    chip.addEventListener("click", () => {
-        if (gameActive) return;
-        const value = parseFloat(chip.dataset.value);
-        if (bank >= value) {
-            bank = Math.round((bank - value) * 100) / 100;
-            currentBet = Math.round((currentBet + value) * 100) / 100;
-            updateMoney();
-            dealBtn.disabled = false;
-        }
-    });
+  chip.addEventListener("click", () => {
+    if (gameActive) return;
+    const value = parseFloat(chip.dataset.value);
+    if (bank >= value) {
+      bank = Math.round((bank - value) * 100) / 100;
+      currentBet = Math.round((currentBet + value) * 100) / 100;
+      updateMoney();
+      dealBtn.disabled = false;
+    }
+  });
 });
 
 clearBetBtn.onclick = () => {
-    if (gameActive) return;
-    bank = Math.round((bank + currentBet) * 100) / 100;
-    currentBet = 0;
-    dealBtn.disabled = true;
-    updateMoney();
+  if (gameActive) return;
+  bank = Math.round((bank + currentBet) * 100) / 100;
+  currentBet = 0;
+  dealBtn.disabled = true;
+  updateMoney();
 };
 
 rebetBtn.onclick = () => {
-    if (gameActive || lastBet <= 0) return;
+  if (gameActive || lastBet <= 0) return;
 
-    bank += currentBet;
-    currentBet = 0;
+  bank += currentBet;
+  currentBet = 0;
 
-    if (lastBet > bank) return;
+  if (lastBet > bank) return;
 
-    bank -= lastBet;
-    currentBet = lastBet;
-    dealBtn.disabled = false;
-    updateMoney();
+  bank -= lastBet;
+  currentBet = lastBet;
+  dealBtn.disabled = false;
+  updateMoney();
 };
 
 doubleRebetBtn.onclick = () => {
-    if (gameActive || lastBet <= 0) return;
+  if (gameActive || lastBet <= 0) return;
 
-    bank += currentBet;
-    currentBet = 0;
+  bank += currentBet;
+  currentBet = 0;
 
-    if (lastBet * 2 > bank) return;
+  if (lastBet * 2 > bank) return;
 
-    bank -= lastBet * 2;
-    currentBet = lastBet * 2;
-    dealBtn.disabled = false;
-    updateMoney();
+  bank -= lastBet * 2;
+  currentBet = lastBet * 2;
+  dealBtn.disabled = false;
+  updateMoney();
 };
 
 tripleRebetBtn.onclick = () => {
-    if (gameActive || lastBet <= 0) return;
+  if (gameActive || lastBet <= 0) return;
 
-    bank += currentBet;
-    currentBet = 0;
+  bank += currentBet;
+  currentBet = 0;
 
-    if (lastBet * 3 > bank) return;
+  if (lastBet * 3 > bank) return;
 
-    bank -= lastBet * 3;
-    currentBet = lastBet * 3;
-    dealBtn.disabled = false;
-    updateMoney();
+  bank -= lastBet * 3;
+  currentBet = lastBet * 3;
+  dealBtn.disabled = false;
+  updateMoney();
 };
 
 /* =======================
    DEAL / GAME FLOW
 ======================= */
 dealBtn.onclick = () => {
-    if (currentBet <= 0) return;
+  if (currentBet <= 0) return;
 
-    gameActive = true;
-    lastBet = currentBet;
-    handBets = [currentBet, 0];
-    resultEl.textContent = "-";
+  gameActive = true;
+  lastBet = currentBet;
+  handBets = [currentBet, 0];
+  resultEl.textContent = "-";
 
-    deck = createDeck();
-    shuffle(deck);
+  deck = createDeck();
+  shuffle(deck);
 
-    dealerHand = [drawCard(), drawCard()];
-    playerHand = [drawCard(), drawCard()];
+  dealerHand = [drawCard(), drawCard()];
+  playerHand = [drawCard(), drawCard()];
 
-    playerSplitHand = [];
-    isSplitActive = false;
-    currentHandIndex = 0;
-    playerSplitArea.style.display = "none";
-    playerSplitCardsEl.innerHTML = "";
-    playerSplitScoreEl.textContent = "0";
-    updateActiveHandUI();
+  playerSplitHand = [];
+  isSplitActive = false;
+  currentHandIndex = 0;
+  playerSplitArea.style.display = "none";
+  playerSplitCardsEl.innerHTML = "";
+  playerSplitScoreEl.textContent = "0";
+  updateActiveHandUI();
 
-    renderCards(playerCardsEl, playerHand);
-    renderCards(dealerCardsEl, dealerHand, 1);
+  // Lock buttons during deal animation
+  hitBtn.disabled = true;
+  standBtn.disabled = true;
+  doubleBtn.disabled = true;
+  splitBtn.disabled = true;
+  dealBtn.disabled = true;
 
-    updateScores(false);
+  updateMoney();
+
+  dealOpeningCards().then(() => {
+    if (checkInitialBlackjack()) return;
 
     hitBtn.disabled = false;
     standBtn.disabled = false;
-    doubleBtn.disabled = bank < currentBet;
-    splitBtn.disabled = !(playerHand.length === 2 && getCardSplitValue(playerHand[0]) === getCardSplitValue(playerHand[1]) && bank >= currentBet);
-    dealBtn.disabled = true;
-
-    updateMoney();
+    doubleBtn.disabled = bank < handBets[0];
+    splitBtn.disabled = !(playerHand.length === 2 && getCardSplitValue(playerHand[0]) === getCardSplitValue(playerHand[1]) && bank >= handBets[0]);
+  });
 };
+
 /* =======================
    PLAYER ACTIONS
 ======================= */
 hitBtn.onclick = () => {
-    if (!gameActive) return;
+  if (!gameActive) return;
 
-    const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
-    const activeCardsEl = currentHandIndex === 0 ? playerCardsEl : playerSplitCardsEl;
-    const activeScoreEl = currentHandIndex === 0 ? playerScoreEl : playerSplitScoreEl;
+  const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
+  const activeCardsEl = currentHandIndex === 0 ? playerCardsEl : playerSplitCardsEl;
+  const activeScoreEl = currentHandIndex === 0 ? playerScoreEl : playerSplitScoreEl;
 
-    activeHand.push(drawCard());
-    renderCards(activeCardsEl, activeHand);
+  activeHand.push(drawCard());
+  renderCards(activeCardsEl, activeHand);
+  animateNewCard(activeCardsEl);
 
-    doubleBtn.disabled = true;
-    splitBtn.disabled = true;
+  doubleBtn.disabled = true;
+  splitBtn.disabled = true;
 
-    activeScoreEl.textContent = calculateScore(activeHand);
+  activeScoreEl.textContent = calculateScore(activeHand);
 
-    if (calculateScore(activeHand) > 21) {
-        if (isSplitActive && currentHandIndex === 0) {
-            currentHandIndex = 1;
-            updateActiveHandUI();
-        } else {
-            dealerTurn();
-        }
+  if (calculateScore(activeHand) > 21) {
+    if (isSplitActive && currentHandIndex === 0) {
+      currentHandIndex = 1;
+      updateActiveHandUI();
+    } else {
+      dealerTurn();
     }
+  }
 };
 
 standBtn.onclick = () => {
-    if (!gameActive) return;
+  if (!gameActive) return;
 
-    if (isSplitActive && currentHandIndex === 0) {
-        currentHandIndex = 1;
-        updateActiveHandUI();
-    } else {
-        dealerTurn();
-    }
+  if (isSplitActive && currentHandIndex === 0) {
+    currentHandIndex = 1;
+    updateActiveHandUI();
+  } else {
+    dealerTurn();
+  }
 };
 
 doubleBtn.onclick = () => {
-    if (!gameActive) return;
+  if (!gameActive) return;
 
-    // Deduct additional bet equal to current bet
-    if (bank < currentBet) return;
-    bank -= handBets[currentHandIndex];
-    handBets[currentHandIndex] *= 2;
-    currentBet = getTotalActiveBet();
+  if (bank < handBets[currentHandIndex]) return;
 
-    // Draw exactly one card
-    const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
-    const activeCardsEl = currentHandIndex === 0 ? playerCardsEl : playerSplitCardsEl;
-    const activeScoreEl = currentHandIndex === 0 ? playerScoreEl : playerSplitScoreEl;
+  bank -= handBets[currentHandIndex];
+  handBets[currentHandIndex] *= 2;
+  currentBet = getTotalActiveBet();
 
-    activeHand.push(drawCard());
-    renderCards(activeCardsEl, activeHand);
-    activeScoreEl.textContent = calculateScore(activeHand);
+  const activeHand = currentHandIndex === 0 ? playerHand : playerSplitHand;
+  const activeCardsEl = currentHandIndex === 0 ? playerCardsEl : playerSplitCardsEl;
+  const activeScoreEl = currentHandIndex === 0 ? playerScoreEl : playerSplitScoreEl;
 
-    updateMoney();
+  activeHand.push(drawCard());
+  renderCards(activeCardsEl, activeHand);
+  animateNewCard(activeCardsEl);
+  activeScoreEl.textContent = calculateScore(activeHand);
 
-    // Automatically stand (move to next hand or dealer turn)
-    if (isSplitActive && currentHandIndex === 0) {
-        currentHandIndex = 1;
-        updateActiveHandUI();
-    } else {
-        dealerTurn();
-    }
+  updateMoney();
+
+  if (isSplitActive && currentHandIndex === 0) {
+    currentHandIndex = 1;
+    updateActiveHandUI();
+  } else {
+    dealerTurn();
+  }
 };
 
 /* =======================
@@ -424,191 +482,198 @@ const playerSplitScoreEl = document.getElementById("player-split-score");
 const playerSplitArea = document.getElementById("player-split-area");
 
 function updateActiveHandUI() {
-    const playerArea = document.querySelector(".player-area");
+  const playerArea = document.querySelector(".player-area");
 
-    playerArea.classList.toggle("active-hand", currentHandIndex === 0);
-    playerSplitArea.classList.toggle("active-hand", currentHandIndex === 1);
+  playerArea.classList.toggle("active-hand", currentHandIndex === 0);
+  playerSplitArea.classList.toggle("active-hand", currentHandIndex === 1);
 }
 
 playerCardsEl.onclick = () => {
-    if (!gameActive || !isSplitActive) return;
-    currentHandIndex = 0;
-    updateActiveHandUI();
+  if (!gameActive || !isSplitActive) return;
+  currentHandIndex = 0;
+  updateActiveHandUI();
 };
 
 playerSplitCardsEl.onclick = () => {
-    if (!gameActive || !isSplitActive) return;
-    currentHandIndex = 1;
-    updateActiveHandUI();
+  if (!gameActive || !isSplitActive) return;
+  currentHandIndex = 1;
+  updateActiveHandUI();
 };
 
 function getCardSplitValue(card) {
-    if (["10", "J", "Q", "K"].includes(card.value)) return 10;
-    return card.value;
+  if (["10", "J", "Q", "K"].includes(card.value)) return 10;
+  return card.value;
 }
 
 splitBtn.onclick = () => {
-    if (!gameActive) return;
+  if (!gameActive) return;
 
-    // Only allow split if 2 cards of same value
-    if (playerHand.length !== 2 || getCardSplitValue(playerHand[0]) !== getCardSplitValue(playerHand[1])) return;
+  if (playerHand.length !== 2 || getCardSplitValue(playerHand[0]) !== getCardSplitValue(playerHand[1])) return;
 
-    if (bank < currentBet) return; // need equal bet
+  if (bank < currentBet) return;
 
-    // Deduct second bet
-    bank -= currentBet;
+  bank -= handBets[0];
+  handBets[1] = handBets[0];
+  currentBet = getTotalActiveBet();
 
-    // Split hands
-    playerSplitHand = [playerHand.pop()];
-    playerHand.push(drawCard());
-    playerSplitHand.push(drawCard());
+  playerSplitHand = [playerHand.pop()];
+  playerHand.push(drawCard());
+  playerSplitHand.push(drawCard());
 
-    isSplitActive = true;
-    currentHandIndex = 0;
+  isSplitActive = true;
+  currentHandIndex = 0;
 
-    // Show split area
-    playerSplitArea.style.display = "block";
+  playerSplitArea.style.display = "block";
 
-    renderCards(playerCardsEl, playerHand);
-    renderCards(playerSplitCardsEl, playerSplitHand);
+  renderCards(playerCardsEl, playerHand);
+  renderCards(playerSplitCardsEl, playerSplitHand);
 
-    updateScores(false);
-    playerSplitScoreEl.textContent = calculateScore(playerSplitHand);
-    updateActiveHandUI();
-   
-    updateMoney();
+  updateScores(false);
+  playerSplitScoreEl.textContent = calculateScore(playerSplitHand);
+  updateActiveHandUI();
+
+  updateMoney();
 };
 
 /* =======================
    DEALER LOGIC
 ======================= */
 function animateReveal(container) {
-    const lastCard = container.lastElementChild;
-    if (!lastCard) return;
+  const lastCard = container.lastElementChild;
+  if (!lastCard) return;
 
-    lastCard.classList.add("revealing");
-    lastCard.addEventListener("animationend", () => {
-        lastCard.classList.remove("revealing");
-    }, { once: true });
+  lastCard.classList.add("revealing");
+  lastCard.addEventListener("animationend", () => {
+    lastCard.classList.remove("revealing");
+  }, { once: true });
 }
 
 function dealerTurn() {
-    renderCards(dealerCardsEl, dealerHand);
-    animateReveal(dealerCardsEl);
-    updateScores(true);
+  // Disable buttons during dealer turn
+  hitBtn.disabled = true;
+  standBtn.disabled = true;
+  doubleBtn.disabled = true;
+  splitBtn.disabled = true;
 
-    while (calculateScore(dealerHand) < 17) {
-        dealerHand.push(drawCard());
-        renderCards(dealerCardsEl, dealerHand);
-        updateScores(true);
-    }
+  // Reveal the hidden card
+  renderCards(dealerCardsEl, dealerHand);
+  animateReveal(dealerCardsEl);
+  updateScores(true);
 
+  // Draw extra cards until 17+, then add them all at once and animate one by one
+  const startIndex = dealerHand.length;
+  while (calculateScore(dealerHand) < 17) {
+    dealerHand.push(drawCard());
+  }
+
+  dealDealerCards(startIndex).then(() => {
     determineWinner();
+  });
 }
 
 /* =======================
    RESULT
 ======================= */
 function determineWinner() {
-    const dealerScore = calculateScore(dealerHand);
+  const dealerScore = calculateScore(dealerHand);
 
-    if (!isSplitActive) {
-        const playerScore = calculateScore(playerHand);
+  if (!isSplitActive) {
+    const playerScore = calculateScore(playerHand);
 
-        if (playerHand.length === 2 && playerScore === 21) {
-            bank += currentBet * 2.5;
-            endRound("Blackjack! You win!");
-            return;
-        }
-
-        if (playerScore > 21) {
-            endRound("Bust! Dealer wins.");
-        } else if (playerScore <= 21 && (dealerScore > 21 || playerScore > dealerScore)) {
-            bank += currentBet * 2;
-            endRound("You win!");
-        } else if (playerScore < dealerScore) {
-            endRound("Dealer wins.");
-        } else {
-            bank += currentBet;
-            endRound("Push.");
-        }
-
-        return;
+    if (playerHand.length === 2 && playerScore === 21) {
+      bank += currentBet * 2.5;
+      endRound("Blackjack! You win!");
+      return;
     }
 
-    const hand1Score = calculateScore(playerHand);
-    const hand2Score = calculateScore(playerSplitHand);
-
-   let hand1Result = "";
-    let hand2Result = "";
-
-    if (hand1Score > 21) {
-        hand1Result = "lose";
-    } else if (dealerScore > 21 || hand1Score > dealerScore) {
-        hand1Result = "win";
-        bank += currentBet * 2;
-    } else if (hand1Score < dealerScore) {
-        hand1Result = "lose";
+    if (playerScore > 21) {
+      endRound("Bust! Dealer wins.");
+    } else if (playerScore <= 21 && (dealerScore > 21 || playerScore > dealerScore)) {
+      bank += currentBet * 2;
+      endRound("You win!");
+    } else if (playerScore < dealerScore) {
+      endRound("Dealer wins.");
     } else {
-        hand1Result = "push";
-        bank += currentBet;
+      bank += currentBet;
+      endRound("Push.");
     }
 
-    if (hand2Score > 21) {
-        hand2Result = "lose";
-    } else if (dealerScore > 21 || hand2Score > dealerScore) {
-        hand2Result = "win";
-        bank += currentBet * 2;
-    } else if (hand2Score < dealerScore) {
-        hand2Result = "lose";
-    } else {
-        hand2Result = "push";
-        bank += currentBet;
-    }
+    return;
+  }
 
-    if (hand1Result === "win" && hand2Result === "win") {
-        endRound("You won both hands!");
-    } else if (hand1Result === "lose" && hand2Result === "lose") {
-        endRound("You lost both hands.");
-    } else if (
-        (hand1Result === "win" && hand2Result === "lose") ||
-        (hand1Result === "lose" && hand2Result === "win")
-    ) {
-        endRound("You won one hand and lost the other hand.");
-    } else if (hand1Result === "push" && hand2Result === "push") {
-        endRound("Both hands pushed.");
-    } else if (
-        (hand1Result === "win" && hand2Result === "push") ||
-        (hand1Result === "push" && hand2Result === "win")
-    ) {
-        endRound("You won one hand and pushed the other.");
-    } else if (
-        (hand1Result === "lose" && hand2Result === "push") ||
-        (hand1Result === "push" && hand2Result === "lose")
-    ) {
-        endRound("You lost one hand and pushed the other.");
-    }
+  const hand1Score = calculateScore(playerHand);
+  const hand2Score = calculateScore(playerSplitHand);
+
+  let hand1Result = "";
+  let hand2Result = "";
+
+  if (hand1Score > 21) {
+    hand1Result = "lose";
+  } else if (dealerScore > 21 || hand1Score > dealerScore) {
+    hand1Result = "win";
+    bank += handBets[0] * 2;
+  } else if (hand1Score < dealerScore) {
+    hand1Result = "lose";
+  } else {
+    hand1Result = "push";
+    bank += handBets[0];
+  }
+
+  if (hand2Score > 21) {
+    hand2Result = "lose";
+  } else if (dealerScore > 21 || hand2Score > dealerScore) {
+    hand2Result = "win";
+    bank += handBets[1] * 2;
+  } else if (hand2Score < dealerScore) {
+    hand2Result = "lose";
+  } else {
+    hand2Result = "push";
+    bank += handBets[1];
+  }
+
+  if (hand1Result === "win" && hand2Result === "win") {
+    endRound("You won both hands!");
+  } else if (hand1Result === "lose" && hand2Result === "lose") {
+    endRound("You lost both hands.");
+  } else if (
+    (hand1Result === "win" && hand2Result === "lose") ||
+    (hand1Result === "lose" && hand2Result === "win")
+  ) {
+    endRound("You won one hand and lost the other hand.");
+  } else if (hand1Result === "push" && hand2Result === "push") {
+    endRound("Both hands pushed.");
+  } else if (
+    (hand1Result === "win" && hand2Result === "push") ||
+    (hand1Result === "push" && hand2Result === "win")
+  ) {
+    endRound("You won one hand and pushed the other.");
+  } else if (
+    (hand1Result === "lose" && hand2Result === "push") ||
+    (hand1Result === "push" && hand2Result === "lose")
+  ) {
+    endRound("You lost one hand and pushed the other.");
+  }
 }
 
 function updateDealAvailability() {
-    dealBtn.disabled = gameActive || currentBet <= 0;
+  dealBtn.disabled = gameActive || currentBet <= 0;
 }
 
 function endRound(message) {
-    resultEl.textContent = message;
-    currentBet = 0;
-    gameActive = false;
+  resultEl.textContent = message;
+  currentBet = 0;
+  gameActive = false;
 
-    renderCards(dealerCardsEl, dealerHand);
-    updateScores(true);
+  renderCards(dealerCardsEl, dealerHand);
+  updateScores(true);
 
-    hitBtn.disabled = true;
-    standBtn.disabled = true;
-    doubleBtn.disabled = true;
-    splitBtn.disabled = true;
-    dealBtn.disabled = false;
+  hitBtn.disabled = true;
+  standBtn.disabled = true;
+  doubleBtn.disabled = true;
+  splitBtn.disabled = true;
+  dealBtn.disabled = false;
 
-    updateMoney();
+  updateMoney();
 }
 
 hitBtn.disabled = true;
@@ -623,42 +688,42 @@ const safeBankInput = document.getElementById("safe-bank-input");
 const safeBankInfo = document.getElementById("safe-bank-modal-info");
 
 document.getElementById("manage-safe-bank").onclick = () => {
-    safeBankInfo.textContent = `Bank: $${bank.toFixed(2)} | Safe Bank: $${safeBank.toFixed(2)}`;
-    safeBankInput.value = "";
-    safeBankModal.style.display = "flex";
+  safeBankInfo.textContent = `Bank: $${bank.toFixed(2)} | Safe Bank: $${safeBank.toFixed(2)}`;
+  safeBankInput.value = "";
+  safeBankModal.style.display = "flex";
 };
 
 document.getElementById("safe-bank-deposit").onclick = () => {
-    const amount = Math.round(parseFloat(safeBankInput.value) * 100) / 100;
-    if (isNaN(amount) || amount <= 0 || amount > bank) return;
-    bank = Math.round((bank - amount) * 100) / 100;
-    safeBank = Math.round((safeBank + amount) * 100) / 100;
-    updateMoney();
-    safeBankModal.style.display = "none";
+  const amount = Math.round(parseFloat(safeBankInput.value) * 100) / 100;
+  if (isNaN(amount) || amount <= 0 || amount > bank) return;
+  bank = Math.round((bank - amount) * 100) / 100;
+  safeBank = Math.round((safeBank + amount) * 100) / 100;
+  updateMoney();
+  safeBankModal.style.display = "none";
 };
 
 document.getElementById("safe-bank-withdraw").onclick = () => {
-    const amount = Math.round(parseFloat(safeBankInput.value) * 100) / 100;
-    if (isNaN(amount) || amount <= 0 || amount > safeBank) return;
-    safeBank = Math.round((safeBank - amount) * 100) / 100;
-    bank = Math.round((bank + amount) * 100) / 100;
-    updateMoney();
-    safeBankModal.style.display = "none";
+  const amount = Math.round(parseFloat(safeBankInput.value) * 100) / 100;
+  if (isNaN(amount) || amount <= 0 || amount > safeBank) return;
+  safeBank = Math.round((safeBank - amount) * 100) / 100;
+  bank = Math.round((bank + amount) * 100) / 100;
+  updateMoney();
+  safeBankModal.style.display = "none";
 };
 
 document.getElementById("safe-bank-cancel").onclick = () => {
-    safeBankModal.style.display = "none";
+  safeBankModal.style.display = "none";
 };
 
 function dealCards() {
-    deck = createDeck();
-    shuffle(deck);
+  deck = createDeck();
+  shuffle(deck);
 
-    playerHand = [drawCard(), drawCard()];
-    dealerHand = [drawCard(), drawCard()];
+  playerHand = [drawCard(), drawCard()];
+  dealerHand = [drawCard(), drawCard()];
 
-    renderCards(playerCardsEl, playerHand);
-    renderCards(dealerCardsEl, [dealerHand[0]]); 
+  renderCards(playerCardsEl, playerHand);
+  renderCards(dealerCardsEl, [dealerHand[0]]);
 
-    updateScores(false);
+  updateScores(false);
 }
