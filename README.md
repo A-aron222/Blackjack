@@ -17,6 +17,8 @@ Index.html is the excecutable file that will open the game file. Opening this wi
 1. Players may choose to hit (take another card) or stand (keep their hand).
 1. If a player’s hand exceeds 21, they bust and lose immediately.
 1. A hand totaling exactly 21 with the first two cards is called a blackjack and pays extra.
+1. Players can decide to split if they have 2 of the same value card, allowing them to play 2 hands
+1. Players can decide to double down (double their initial hand) for 1 additional card.
 1. After players finish making their decisions, the dealer reveals their hidden card and must hit until reaching at least 17.
 1. If the dealer busts, all remaining players win.
 1. If neither busts, the hand closest to 21 wins, and ties result in a push (money back to players).
