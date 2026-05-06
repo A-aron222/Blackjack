@@ -548,11 +548,16 @@ function getCardSplitValue(card) {
 splitBtn.onclick = () => {
   if (!gameActive) return;
 
-  if (playerHand.length !== 2 || getCardSplitValue(playerHand[0]) !== getCardSplitValue(playerHand[1])) return;
+  if (
+    playerHand.length !== 2 ||
+    getCardSplitValue(playerHand[0]) !== getCardSplitValue(playerHand[1])
+  ) {
+    return;
+  }
 
-  if (bank < currentBet) return;
+  if (bank < handBets[0]) return;
 
-  bank -= handBets[0];
+  bank = Math.round((bank - handBets[0]) * 100) / 100;
   handBets[1] = handBets[0];
   currentBet = getTotalActiveBet();
 
@@ -572,9 +577,11 @@ splitBtn.onclick = () => {
   playerSplitScoreEl.textContent = calculateScore(playerSplitHand);
   updateActiveHandUI();
 
+  splitBtn.disabled = true;
+  doubleBtn.disabled = bank < handBets[currentHandIndex];
+
   updateMoney();
 };
-
 /* =======================
    DEALER LOGIC
 ======================= */
