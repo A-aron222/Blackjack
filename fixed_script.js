@@ -37,6 +37,38 @@ if (modalCloseBtn) {
   };
 }
 
+function resetTableOnly() {
+  deck = [];
+  dealerHand = [];
+  playerHand = [];
+  playerSplitHand = [];
+
+  currentBet = 0;
+  handBets = [0, 0];
+  gameActive = false;
+  isSplitActive = false;
+  currentHandIndex = 0;
+
+  dealerCardsEl.innerHTML = "";
+  playerCardsEl.innerHTML = "";
+  playerSplitCardsEl.innerHTML = "";
+  playerSplitArea.style.display = "none";
+
+  dealerScoreEl.textContent = "0";
+  playerScoreEl.textContent = "0";
+  playerSplitScoreEl.textContent = "0";
+  resultEl.textContent = "-";
+
+  hitBtn.disabled = true;
+  standBtn.disabled = true;
+  doubleBtn.disabled = true;
+  splitBtn.disabled = true;
+  dealBtn.disabled = true;
+
+  updateActiveHandUI();
+  updateMoney();
+}
+
 /* =======================
    GAME STATE
 ======================= */
