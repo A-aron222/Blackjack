@@ -529,15 +529,15 @@ function updateActiveHandUI() {
 }
 
 playerCardsEl.onclick = () => {
+  // Hand clicking is visual only for now.
+  // Turn order should stay controlled by Hit / Stand / Double.
   if (!gameActive || !isSplitActive) return;
-  currentHandIndex = 0;
-  updateActiveHandUI();
 };
 
 playerSplitCardsEl.onclick = () => {
+  // Hand clicking is visual only for now.
+  // This prevents players from jumping between split hands out of order.
   if (!gameActive || !isSplitActive) return;
-  currentHandIndex = 1;
-  updateActiveHandUI();
 };
 
 function getCardSplitValue(card) {
