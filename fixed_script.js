@@ -694,22 +694,25 @@ function updateDealAvailability() {
 function endRound(message) {
   resultEl.textContent = message;
   currentBet = 0;
+  handBets = [0, 0];
   gameActive = false;
   isSplitActive = false;
+  currentHandIndex = 0;
 
   renderCards(dealerCardsEl, dealerHand);
   updateScores(true);
+  updateActiveHandUI();
 
   hitBtn.disabled = true;
   standBtn.disabled = true;
   doubleBtn.disabled = true;
   splitBtn.disabled = true;
 
+  // After a round ends, player must place a new bet or use Rebet.
+  dealBtn.disabled = true;
+
   if (bank <= 0 && safeBank <= 0) {
-    dealBtn.disabled = true;
     resultEl.textContent = message + " You're out of money! Click New Game to restart.";
-  } else {
-    dealBtn.disabled = false;
   }
 
   updateMoney();
